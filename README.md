@@ -1,4 +1,3 @@
-# relatedquorks
+# sqrls
 
-This is an example
-This is a return example
+This is a query language used to evaluate relational algebra expressions
