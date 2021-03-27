@@ -1,0 +1,13 @@
+/**
+*****TABLE REQUIREMENTS ******
+table ablstract class
+  column requirements - table should be able to implement as many columns or as few columns as requested
+  row requirements
+  table name uniqueness
+**/
+/**
+*****REQUIRED METHODS *******
+using the 'dot' (table.column) should check first if the column exists, and return a hard error/fail if the column does not exist
+  if table is a struct, and the columns are a member of the struct, the dot method is already built in, and the struct should be able to handle as many columns as requested
+if the table does not contain the requested information, it would return a soft error/fail, a null 
+**/
