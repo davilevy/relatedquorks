@@ -11,3 +11,12 @@ using the 'dot' (table.column) should check first if the column exists, and retu
   if table is a struct, and the columns are a member of the struct, the dot method is already built in, and the struct should be able to handle as many columns as requested
 if the table does not contain the requested information, it would return a soft error/fail, a null 
 **/
+///////////// below is a quick think of how the sqrls table abstract class would look
+
+
+import java.io.*;
+
+abstract class sqrstable // 99% certain this needs to match file name, can check later
+(
+
+)
