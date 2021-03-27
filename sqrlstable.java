@@ -31,15 +31,15 @@ abstract class Table {
 	}
 
 	public void add(String ...a) {
-		TODO: check for empty list
-		if (columnCount != a.lenght)
+		if (a.isEmpty())
+			throw new IllegalArgumentException("Row cannot be empty\n");
+		if (columnCount != a.length)
 			throw new IllegalArgumentException("Usage: " + this.toString() + "\n");
 		else {
 			ArrayList<String> row = new ArrayList<String>();
 			for (String i : a)
 				row.add(i);
-			TODO: there should be a way to add multiple memeber elements to the table object? if there is, then each row could be added to the table, otherwise, you would have to have an arraylist of arraylists, 
-			and add each row to the verticle arraylist....
+			TODO: there should be a way to add multiple memeber elements to the table object? if there is, then each row could be added to the table, otherwise, you would have to have an arraylist of arraylists, and add each row to the verticle arraylist...
 		}
 	}
 
