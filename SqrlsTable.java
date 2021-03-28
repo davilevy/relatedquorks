@@ -11,8 +11,6 @@ using the 'dot' (table.column) should check first if the column exists, and retu
   if table is a struct, and the columns are a member of the struct, the dot method is already built in, and the struct should be able to handle as many columns as requested
 if the table does not contain the requested information, it would return a soft error/fail, a null 
 **/
-///////////// below is a quick think of how the sqrls table abstract class would look
-
 
 import java.io.*;
 import java.util.Arrays;
@@ -30,31 +28,32 @@ abstract class Table {
 		dataTable = new String[rowCount][columnCount];
 	}
 	
-	public int[] searchColumn(String column, String val) {
-		int columnNumber;
-		//TODO Implement arraylist to hold the row numbers of matching rows
-		
-		//Function for finding the correct column number based on provided column name
-		for(int i=0; i<columnCount; i++) {
-			if(column.equals(dataTable[0][i])) {
-				columnNumber = i;
-			}
-		}
-		//Check to make sure we were able to find the column and throw an exception if not found
-		if(columnNumber == null) {
-			//TODO Add exception throwing and possible rework the if statement
-		}
+	//Method for searching a column and finding the row numbers of matching rows
+	private ArrayList<Integer> searchColumn(String columnName, String val) {
+		int columnNumber = findColumn(columnName);
+		ArrayList<Integer> matchingRows = new ArrayList<Integer>();
 		//Function to search every row to the requested column and record the row number of matches
 		for(int i=0; i<rowCount; i++) {
 			if(val.equals(dataTable[i][columnNumber])) {
-				//TODO Implement the checking and tracking code
+				matchingRows.add(i);
 			}
 		}
-		//TODO Change return to something useful
-		return null;
+		return matchingRows;
 	}
 	
-	//Function that returns the requested row as a String array
+	//Method that attempts to find a requested column
+	private int findColumn(String columnName) {
+		for(int i=0; i<columnCount; i++) {
+			if(columnName.equals(dataTable[0][i])) {
+				//If the column is found. Return the column number and stop the loop
+				return i;
+			}
+		}
+		//Terminate the program if the column could not be found
+		throw new IllegalArgumentException("Column does not exist\n");
+	}
+	
+	//Method that returns the requested row as a String array
 	public String[] returnRow(int rowNumber) {
 		return dataTable[rowNumber];
 	}
