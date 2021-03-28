@@ -13,7 +13,7 @@ public class SqrlsEngine {
 	static Map<String, SqrlsTable> vars = new HashMap<String, SqrlsTable>();
 	
 
-	
+	// constructor would be called by applet and given a string to evaluate, i.e. Enrollment[ST# = 100]
 	String[][] SqrlsEngine(String argv) {
 		this.stk = new Stack<String>();
 		this.query = new StringTokenizer(argv);
@@ -44,12 +44,15 @@ public class SqrlsEngine {
 					if (p.equals("=")) {
 						parms[i][0] = "equals";
 						parms[i][1] = p;
+						System.out.println(p);
 					} else if (p.substring(p.length() - 1).equals(",")) {
 						parms[i][0] = "column";
 						parms[i][1] = p.substring(0,p.length() - 1);
+						System.out.println(p);
 					} else if (p.substring(p.length() - 1).equals("\"")) {
 						parms[i][0] = "value";
 						parms[i][1] = p;
+						System.out.println(p);
 					}
 				}
 				// now that the operands have been identified, apply to table
@@ -84,10 +87,13 @@ public class SqrlsEngine {
 			}
 			System.out.println();
 		}
-		StringTokenizer testeval = new StringTokenizer("Enrollment[ST#,100]");
+		StringTokenizer testeval = new StringTokenizer("Enrollment[ST#=100]");
+		System.out.println(testeval.toString());
 		String[][] eval = evaluate(testeval);
 	}
 	
+	
+	// for testing purposes assign values to tables
 	private static void dummySetup() {
 		vars.put("student",student);
 		vars.put("enrollment", enrollment);
