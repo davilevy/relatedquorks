@@ -12,16 +12,30 @@ using the 'dot' (table.column) should check first if the column exists, and retu
 if the table does not contain the requested information, it would return a soft error/fail, a null 
 **/
 
+/*
+ * TODO:
+ * Set created tables to protected access modifiers
+ * Finish overriding the toString method
+ * Possibly create a method to return an entire column or set of columns
+ * Set up scanner I/O for testing in main method and slowly convert to web page I/O
+ * Double check all the access modifiers
+ * Maybe make return rows return a table of it's own of just the results
+ * Maybe overload constructor to create a table from returned rows (is that even possible or can this only be handled by an outside method?)
+ * Make all SqrlsTable instances: protected SqrlsTable myTable = new SqrlsTable();
+ */
+
 import java.io.*;
 import java.util.Arrays;
 import java.util.ArrayList;
+import java.lang.StringBuilder;
 
-abstract class Table { 
+public class SqrlsTable { 
 	String tableName;
 	int columnCount, rowCount;
 	String[][] dataTable;
-
-	Table(String tableName, int rowCount, int columnCount) {
+	
+	//TODO possibly over load constructor to allow for new table to be made from returned rows
+	SqrlsTable(String tableName, int rowCount, int columnCount) {
 		this.tableName = tableName;
 		this.rowCount = rowCount;
 		this.columnCount = columnCount;
@@ -54,31 +68,16 @@ abstract class Table {
 	}
 	
 	//Method that returns the requested row as a String array
-	public String[] returnRow(int rowNumber) {
+	public String[] returnRows(int rowNumber) {
 		return dataTable[rowNumber];
 	}
 	
 	@Override
 	public String toString(){
 		// This would be overloaded to either print the entire table
-		// if the error is called on line 37, all that would be printed is the columns
-		
 		//TODO Figure out if we can return this as [[all of row1], [all of row2], [all of row3], ...]
-		return null;
+		StringBuilder str = new StringBuilder();
+		
+		return str.toString();
 	}
-	
-	/*
-	public void add(String ...a) {
-		if (a.isEmpty())
-			throw new IllegalArgumentException("Row cannot be empty\n");
-		if (columnCount != a.length)
-			throw new IllegalArgumentException("Usage: " + this.toString() + "\n");
-		else {
-			ArrayList<String> row = new ArrayList<String>();
-			for (String i : a)
-				row.add(i);
-			//there should be a way to add multiple memeber elements to the table object? if there is, then each row could be added to the table, otherwise, you would have to have an arraylist of arraylists, and add each row to the verticle arraylist...
-		}
-	}
-	*/
 }
