@@ -1,0 +1,17 @@
+* body {
+    background-color: #7f5a83;
+    background-image: linear-gradient(315deg, #7f5a83 0%, #0d324d 74%);
+    min-height: 100vh;
+    margin: 0;
+}
+
+button {
+    display: block;
+    width: 100%;
+    font-size: 1rem;
+    font-family: inherit;
+}
+
+.table-container {}
+
+.tableanswer-container {}
