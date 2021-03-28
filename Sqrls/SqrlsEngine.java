@@ -1,16 +1,20 @@
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Stack;
 import java.util.StringTokenizer;
 
 public class SqrlsEngine {
-	private Stack<String> stk;
+	private static Stack<String> stk;
 	private StringTokenizer query;
 	/** For testing will use pre built **/
 	static SqrlsTable student = new SqrlsTable("student", 5,"ST#","Classif");
 	static SqrlsTable enrollment = new SqrlsTable("enrollment", 9, "ST#","C#","Midterm","Final");
 	static SqrlsTable course = new SqrlsTable("course", 4, "C#", "Title");
+	static Map<String, SqrlsTable> vars = new HashMap<String, SqrlsTable>();
+	
 
 	
-	SqrlsTable SqrlsEngine(String argv) {
+	String[][] SqrlsEngine(String argv) {
 		this.stk = new Stack<String>();
 		this.query = new StringTokenizer(argv);
 		return evaluate(query);
@@ -18,7 +22,8 @@ public class SqrlsEngine {
 	
 
 
-	private SqrlsTable evaluate(StringTokenizer argv) {
+	static private String[][] evaluate(StringTokenizer argv) {
+		 String[][] result = new String[1][1]; 
 		while (argv.hasMoreTokens()) {
 			String tok = argv.nextToken();
 			if (tok.equalsIgnoreCase("(")) evaluate(argv); // This would indicate a sub query to be evaluated first
@@ -29,12 +34,32 @@ public class SqrlsEngine {
 				 * tableName[Col, Col, Col]
 				 * tableName[Col = Col]tableName
 				 */
-				stk.push(tok); // this would be the opening "["
 				
+				String arguments = "";
+				Stack<String> parameters = new Stack<String>();
+				while ((arguments = argv.nextToken()) != "]") parameters.push(tok);
+				String[][] parms = new String[parameters.size()][2];
+				for(int i = 0; i < parameters.size(); i++) {
+					String p = parameters.pop();
+					if (p.equals("=")) {
+						parms[i][0] = "equals";
+						parms[i][1] = p;
+					} else if (p.substring(p.length() - 1).equals(",")) {
+						parms[i][0] = "column";
+						parms[i][1] = p.substring(0,p.length() - 1);
+					} else if (p.substring(p.length() - 1).equals("\"")) {
+						parms[i][0] = "value";
+						parms[i][1] = p;
+					}
+				}
+				// now that the operands have been identified, apply to table
+				if (parms[1][0].equals("equals")) {
+					return vars.get(stk.pop()).filter(parms[0][1], parms[2][1]);
+				}
 			}
 			else stk.push(tok);
 		}
-		return null;
+		return result;
 	}	
 	
 	public static void main(String[] args) {
@@ -59,9 +84,14 @@ public class SqrlsEngine {
 			}
 			System.out.println();
 		}
+		StringTokenizer testeval = new StringTokenizer("Enrollment[ST#,100]");
+		String[][] eval = evaluate(testeval);
 	}
 	
 	private static void dummySetup() {
+		vars.put("student",student);
+		vars.put("enrollment", enrollment);
+		vars.put("course", course);
 		student.addRow("100","FR");
 		student.addRow("200","SO");
 		student.addRow("300","JR");

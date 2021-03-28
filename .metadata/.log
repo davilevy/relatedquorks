@@ -1579,3 +1579,1794 @@ java.lang.IllegalArgumentException
 	at org.eclipse.jdt.internal.ui.text.JavaCompositeReconcilingStrategy.reconcile(JavaCompositeReconcilingStrategy.java:107)
 	at org.eclipse.jface.text.reconciler.MonoReconciler.process(MonoReconciler.java:76)
 	at org.eclipse.jface.text.reconciler.AbstractReconciler$BackgroundThread.run(AbstractReconciler.java:210)
+
+!ENTRY org.eclipse.jdt.core 4 4 2021-03-28 09:22:46.532
+!MESSAGE Exception occurred during compilation unit conversion:
+----------------------------------- SOURCE BEGIN -------------------------------------
+import java.util.Stack;
+import java.util.StringTokenizer;
+
+public class SqrlsEngine {
+	private Stack<String> stk;
+	private StringTokenizer query;
+	/** For testing will use pre built **/
+	static SqrlsTable student = new SqrlsTable("student", 5,"ST#","Classif");
+	static SqrlsTable enrollment = new SqrlsTable("enrollment", 9, "ST#","C#","Midterm","Final");
+	static SqrlsTable course = new SqrlsTable("course", 4, "C#", "Title");
+	MAP<String, SqrlsTable> vars = new 
+
+	
+	SqrlsTable SqrlsEngine(String argv) {
+		this.stk = new Stack<String>();
+		this.query = new StringTokenizer(argv);
+		return evaluate(query);
+	}
+	
+
+
+	private SqrlsTable evaluate(StringTokenizer argv) {
+		while (argv.hasMoreTokens()) {
+			String tok = argv.nextToken();
+			if (tok.equalsIgnoreCase("(")) evaluate(argv); // This would indicate a sub query to be evaluated first
+			else if (tok.equals("[")) { // v1, this would be indicative of a filter, projection, or a union
+				/**
+				 * Allowed formats for [ is:
+				 * tableName[Col = "val"]
+				 * tableName[Col, Col, Col]
+				 * tableName[Col = Col]tableName
+				 */
+				
+				String arguments = "";
+				Stack<String> parameters = new Stack<String>();
+				while ((arguments = argv.nextToken()) != "]") parameters.push(tok);
+				String[][] parms = new String[parameters.size()][2];
+				for(int i = 0; i < parameters.size(); i++) {
+					String p = parameters.pop();
+					if (p.equals("=")) {
+						parms[0][i] = "equals";
+						parms[1][i] = p;
+					} else if (p.substring(p.length() - 1).equals(",")) {
+						parms[0][i] = "column";
+						parms[1][i] = p.substring(0,p.length() - 1);
+					} else if (p.substring(p.length() - 1).equals("\"")) {
+						parms[0][i] = "value";
+						parms[1][i] = p;
+					}
+				}
+				// now that the operands have been identified, apply to table
+				
+			}
+			else stk.push(tok);
+		}
+		return null;
+	}	
+	
+	public static void main(String[] args) {
+		dummySetup();
+		System.out.println("hello");
+		System.out.println(student.toString());
+		System.out.println(enrollment.toString());
+		System.out.println(course.toString());
+		if (enrollment.containsColumn("ST#")) System.out.println("found");
+		if (!enrollment.containsColumn("zzzzz")) System.out.println("not found");
+		String[][] testProject = enrollment.project("ST#","Final");
+		for(int r = 0; r < 10; r++) {
+			for (int c = 0; c < 2; c++) {
+				System.out.print(testProject[r][c] + " ");
+			}
+			System.out.println();
+		}
+		String[][] testFilter = enrollment.filter("ST#", "100");
+		for(int r = 0; r < 10; r++) {
+			for (int c = 0; c < 4; c++) {
+				System.out.print(testFilter[r][c] + " ");
+			}
+			System.out.println();
+		}
+	}
+	
+	private static void dummySetup() {
+		student.addRow("100","FR");
+		student.addRow("200","SO");
+		student.addRow("300","JR");
+		student.addRow("400","SR");
+		student.addRow("500","FR");
+		enrollment.addRow("100","CS 1713","95","80");
+		enrollment.addRow("100","MAT 1224","100","100");
+		enrollment.addRow("100","ENG 1043","85","85");
+		enrollment.addRow("100","HIS 1033","80","85");
+		enrollment.addRow("200","CS 1713","91","90");
+		enrollment.addRow("200","MAT 1224","50","80");
+		enrollment.addRow("300","CS 1713","65","80");
+		enrollment.addRow("500","CS 1713","100","80");
+		enrollment.addRow("500","HIS 1033","95","90");
+		course.addRow("CS  1713","Intro to CS");
+		course.addRow("MAT 1224","Calculus I");
+		course.addRow("ENG 1043","English I");
+		course.addRow("HIS 1033","History of the World Part I");
+	}
+}
+
+----------------------------------- SOURCE END -------------------------------------
+!STACK 0
+java.lang.IllegalArgumentException
+	at org.eclipse.jdt.core.dom.ASTNode.setSourceRange(ASTNode.java:3008)
+	at org.eclipse.jdt.core.dom.ASTConverter.convertToFieldDeclaration(ASTConverter.java:3378)
+	at org.eclipse.jdt.core.dom.ASTConverter.checkAndAddMultipleFieldDeclaration(ASTConverter.java:456)
+	at org.eclipse.jdt.core.dom.ASTConverter.buildBodyDeclarations(ASTConverter.java:198)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:3115)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:1439)
+	at org.eclipse.jdt.core.dom.AST.convertCompilationUnit(AST.java:392)
+	at org.eclipse.jdt.internal.core.CompilationUnit.buildStructure(CompilationUnit.java:200)
+	at org.eclipse.jdt.internal.core.Openable.generateInfos(Openable.java:268)
+	at org.eclipse.jdt.internal.core.JavaElement.openWhenClosed(JavaElement.java:596)
+	at org.eclipse.jdt.internal.core.CompilationUnit.makeConsistent(CompilationUnit.java:1138)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.makeConsistent(ReconcileWorkingCopyOperation.java:173)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.executeOperation(ReconcileWorkingCopyOperation.java:94)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.run(JavaModelOperation.java:736)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.runOperation(JavaModelOperation.java:802)
+	at org.eclipse.jdt.internal.core.CompilationUnit.reconcile(CompilationUnit.java:1315)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:131)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.access$0(JavaReconcilingStrategy.java:113)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy$1.run(JavaReconcilingStrategy.java:93)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:90)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:157)
+	at org.eclipse.jdt.internal.ui.text.CompositeReconcilingStrategy.reconcile(CompositeReconcilingStrategy.java:92)
+	at org.eclipse.jdt.internal.ui.text.JavaCompositeReconcilingStrategy.reconcile(JavaCompositeReconcilingStrategy.java:107)
+	at org.eclipse.jface.text.reconciler.MonoReconciler.process(MonoReconciler.java:76)
+	at org.eclipse.jface.text.reconciler.AbstractReconciler$BackgroundThread.run(AbstractReconciler.java:210)
+
+!ENTRY org.eclipse.jdt.ui 4 2 2021-03-28 09:22:46.671
+!MESSAGE Problems occurred when invoking code from plug-in: "org.eclipse.jdt.ui".
+!STACK 0
+java.lang.IllegalArgumentException
+	at org.eclipse.jdt.core.dom.ASTNode.setSourceRange(ASTNode.java:3008)
+	at org.eclipse.jdt.core.dom.ASTConverter.convertToFieldDeclaration(ASTConverter.java:3378)
+	at org.eclipse.jdt.core.dom.ASTConverter.checkAndAddMultipleFieldDeclaration(ASTConverter.java:456)
+	at org.eclipse.jdt.core.dom.ASTConverter.buildBodyDeclarations(ASTConverter.java:198)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:3115)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:1439)
+	at org.eclipse.jdt.core.dom.AST.convertCompilationUnit(AST.java:392)
+	at org.eclipse.jdt.internal.core.CompilationUnit.buildStructure(CompilationUnit.java:200)
+	at org.eclipse.jdt.internal.core.Openable.generateInfos(Openable.java:268)
+	at org.eclipse.jdt.internal.core.JavaElement.openWhenClosed(JavaElement.java:596)
+	at org.eclipse.jdt.internal.core.CompilationUnit.makeConsistent(CompilationUnit.java:1138)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.makeConsistent(ReconcileWorkingCopyOperation.java:173)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.executeOperation(ReconcileWorkingCopyOperation.java:94)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.run(JavaModelOperation.java:736)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.runOperation(JavaModelOperation.java:802)
+	at org.eclipse.jdt.internal.core.CompilationUnit.reconcile(CompilationUnit.java:1315)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:131)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.access$0(JavaReconcilingStrategy.java:113)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy$1.run(JavaReconcilingStrategy.java:93)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:90)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:157)
+	at org.eclipse.jdt.internal.ui.text.CompositeReconcilingStrategy.reconcile(CompositeReconcilingStrategy.java:92)
+	at org.eclipse.jdt.internal.ui.text.JavaCompositeReconcilingStrategy.reconcile(JavaCompositeReconcilingStrategy.java:107)
+	at org.eclipse.jface.text.reconciler.MonoReconciler.process(MonoReconciler.java:76)
+	at org.eclipse.jface.text.reconciler.AbstractReconciler$BackgroundThread.run(AbstractReconciler.java:210)
+
+!ENTRY org.eclipse.jdt.ui 4 0 2021-03-28 09:22:46.711
+!MESSAGE Error in JDT Core during reconcile
+!STACK 0
+java.lang.IllegalArgumentException
+	at org.eclipse.jdt.core.dom.ASTNode.setSourceRange(ASTNode.java:3008)
+	at org.eclipse.jdt.core.dom.ASTConverter.convertToFieldDeclaration(ASTConverter.java:3378)
+	at org.eclipse.jdt.core.dom.ASTConverter.checkAndAddMultipleFieldDeclaration(ASTConverter.java:456)
+	at org.eclipse.jdt.core.dom.ASTConverter.buildBodyDeclarations(ASTConverter.java:198)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:3115)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:1439)
+	at org.eclipse.jdt.core.dom.AST.convertCompilationUnit(AST.java:392)
+	at org.eclipse.jdt.internal.core.CompilationUnit.buildStructure(CompilationUnit.java:200)
+	at org.eclipse.jdt.internal.core.Openable.generateInfos(Openable.java:268)
+	at org.eclipse.jdt.internal.core.JavaElement.openWhenClosed(JavaElement.java:596)
+	at org.eclipse.jdt.internal.core.CompilationUnit.makeConsistent(CompilationUnit.java:1138)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.makeConsistent(ReconcileWorkingCopyOperation.java:173)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.executeOperation(ReconcileWorkingCopyOperation.java:94)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.run(JavaModelOperation.java:736)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.runOperation(JavaModelOperation.java:802)
+	at org.eclipse.jdt.internal.core.CompilationUnit.reconcile(CompilationUnit.java:1315)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:131)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.access$0(JavaReconcilingStrategy.java:113)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy$1.run(JavaReconcilingStrategy.java:93)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:90)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:157)
+	at org.eclipse.jdt.internal.ui.text.CompositeReconcilingStrategy.reconcile(CompositeReconcilingStrategy.java:92)
+	at org.eclipse.jdt.internal.ui.text.JavaCompositeReconcilingStrategy.reconcile(JavaCompositeReconcilingStrategy.java:107)
+	at org.eclipse.jface.text.reconciler.MonoReconciler.process(MonoReconciler.java:76)
+	at org.eclipse.jface.text.reconciler.AbstractReconciler$BackgroundThread.run(AbstractReconciler.java:210)
+
+!ENTRY org.eclipse.jdt.core 4 4 2021-03-28 09:22:48.752
+!MESSAGE Exception occurred during compilation unit conversion:
+----------------------------------- SOURCE BEGIN -------------------------------------
+import java.util.Stack;
+import java.util.StringTokenizer;
+
+public class SqrlsEngine {
+	private Stack<String> stk;
+	private StringTokenizer query;
+	/** For testing will use pre built **/
+	static SqrlsTable student = new SqrlsTable("student", 5,"ST#","Classif");
+	static SqrlsTable enrollment = new SqrlsTable("enrollment", 9, "ST#","C#","Midterm","Final");
+	static SqrlsTable course = new SqrlsTable("course", 4, "C#", "Title");
+	MAP<String, SqrlsTable> vars = new Hash
+
+	
+	SqrlsTable SqrlsEngine(String argv) {
+		this.stk = new Stack<String>();
+		this.query = new StringTokenizer(argv);
+		return evaluate(query);
+	}
+	
+
+
+	private SqrlsTable evaluate(StringTokenizer argv) {
+		while (argv.hasMoreTokens()) {
+			String tok = argv.nextToken();
+			if (tok.equalsIgnoreCase("(")) evaluate(argv); // This would indicate a sub query to be evaluated first
+			else if (tok.equals("[")) { // v1, this would be indicative of a filter, projection, or a union
+				/**
+				 * Allowed formats for [ is:
+				 * tableName[Col = "val"]
+				 * tableName[Col, Col, Col]
+				 * tableName[Col = Col]tableName
+				 */
+				
+				String arguments = "";
+				Stack<String> parameters = new Stack<String>();
+				while ((arguments = argv.nextToken()) != "]") parameters.push(tok);
+				String[][] parms = new String[parameters.size()][2];
+				for(int i = 0; i < parameters.size(); i++) {
+					String p = parameters.pop();
+					if (p.equals("=")) {
+						parms[0][i] = "equals";
+						parms[1][i] = p;
+					} else if (p.substring(p.length() - 1).equals(",")) {
+						parms[0][i] = "column";
+						parms[1][i] = p.substring(0,p.length() - 1);
+					} else if (p.substring(p.length() - 1).equals("\"")) {
+						parms[0][i] = "value";
+						parms[1][i] = p;
+					}
+				}
+				// now that the operands have been identified, apply to table
+				
+			}
+			else stk.push(tok);
+		}
+		return null;
+	}	
+	
+	public static void main(String[] args) {
+		dummySetup();
+		System.out.println("hello");
+		System.out.println(student.toString());
+		System.out.println(enrollment.toString());
+		System.out.println(course.toString());
+		if (enrollment.containsColumn("ST#")) System.out.println("found");
+		if (!enrollment.containsColumn("zzzzz")) System.out.println("not found");
+		String[][] testProject = enrollment.project("ST#","Final");
+		for(int r = 0; r < 10; r++) {
+			for (int c = 0; c < 2; c++) {
+				System.out.print(testProject[r][c] + " ");
+			}
+			System.out.println();
+		}
+		String[][] testFilter = enrollment.filter("ST#", "100");
+		for(int r = 0; r < 10; r++) {
+			for (int c = 0; c < 4; c++) {
+				System.out.print(testFilter[r][c] + " ");
+			}
+			System.out.println();
+		}
+	}
+	
+	private static void dummySetup() {
+		student.addRow("100","FR");
+		student.addRow("200","SO");
+		student.addRow("300","JR");
+		student.addRow("400","SR");
+		student.addRow("500","FR");
+		enrollment.addRow("100","CS 1713","95","80");
+		enrollment.addRow("100","MAT 1224","100","100");
+		enrollment.addRow("100","ENG 1043","85","85");
+		enrollment.addRow("100","HIS 1033","80","85");
+		enrollment.addRow("200","CS 1713","91","90");
+		enrollment.addRow("200","MAT 1224","50","80");
+		enrollment.addRow("300","CS 1713","65","80");
+		enrollment.addRow("500","CS 1713","100","80");
+		enrollment.addRow("500","HIS 1033","95","90");
+		course.addRow("CS  1713","Intro to CS");
+		course.addRow("MAT 1224","Calculus I");
+		course.addRow("ENG 1043","English I");
+		course.addRow("HIS 1033","History of the World Part I");
+	}
+}
+
+----------------------------------- SOURCE END -------------------------------------
+!STACK 0
+java.lang.IllegalArgumentException
+	at org.eclipse.jdt.core.dom.ASTNode.setSourceRange(ASTNode.java:3008)
+	at org.eclipse.jdt.core.dom.ASTConverter.convertToFieldDeclaration(ASTConverter.java:3378)
+	at org.eclipse.jdt.core.dom.ASTConverter.checkAndAddMultipleFieldDeclaration(ASTConverter.java:456)
+	at org.eclipse.jdt.core.dom.ASTConverter.buildBodyDeclarations(ASTConverter.java:198)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:3115)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:1439)
+	at org.eclipse.jdt.core.dom.AST.convertCompilationUnit(AST.java:392)
+	at org.eclipse.jdt.internal.core.CompilationUnit.buildStructure(CompilationUnit.java:200)
+	at org.eclipse.jdt.internal.core.Openable.generateInfos(Openable.java:268)
+	at org.eclipse.jdt.internal.core.JavaElement.openWhenClosed(JavaElement.java:596)
+	at org.eclipse.jdt.internal.core.CompilationUnit.makeConsistent(CompilationUnit.java:1138)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.makeConsistent(ReconcileWorkingCopyOperation.java:173)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.executeOperation(ReconcileWorkingCopyOperation.java:94)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.run(JavaModelOperation.java:736)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.runOperation(JavaModelOperation.java:802)
+	at org.eclipse.jdt.internal.core.CompilationUnit.reconcile(CompilationUnit.java:1315)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:131)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.access$0(JavaReconcilingStrategy.java:113)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy$1.run(JavaReconcilingStrategy.java:93)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:90)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:157)
+	at org.eclipse.jdt.internal.ui.text.CompositeReconcilingStrategy.reconcile(CompositeReconcilingStrategy.java:92)
+	at org.eclipse.jdt.internal.ui.text.JavaCompositeReconcilingStrategy.reconcile(JavaCompositeReconcilingStrategy.java:107)
+	at org.eclipse.jface.text.reconciler.MonoReconciler.process(MonoReconciler.java:76)
+	at org.eclipse.jface.text.reconciler.AbstractReconciler$BackgroundThread.run(AbstractReconciler.java:210)
+
+!ENTRY org.eclipse.jdt.ui 4 2 2021-03-28 09:22:48.784
+!MESSAGE Problems occurred when invoking code from plug-in: "org.eclipse.jdt.ui".
+!STACK 0
+java.lang.IllegalArgumentException
+	at org.eclipse.jdt.core.dom.ASTNode.setSourceRange(ASTNode.java:3008)
+	at org.eclipse.jdt.core.dom.ASTConverter.convertToFieldDeclaration(ASTConverter.java:3378)
+	at org.eclipse.jdt.core.dom.ASTConverter.checkAndAddMultipleFieldDeclaration(ASTConverter.java:456)
+	at org.eclipse.jdt.core.dom.ASTConverter.buildBodyDeclarations(ASTConverter.java:198)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:3115)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:1439)
+	at org.eclipse.jdt.core.dom.AST.convertCompilationUnit(AST.java:392)
+	at org.eclipse.jdt.internal.core.CompilationUnit.buildStructure(CompilationUnit.java:200)
+	at org.eclipse.jdt.internal.core.Openable.generateInfos(Openable.java:268)
+	at org.eclipse.jdt.internal.core.JavaElement.openWhenClosed(JavaElement.java:596)
+	at org.eclipse.jdt.internal.core.CompilationUnit.makeConsistent(CompilationUnit.java:1138)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.makeConsistent(ReconcileWorkingCopyOperation.java:173)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.executeOperation(ReconcileWorkingCopyOperation.java:94)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.run(JavaModelOperation.java:736)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.runOperation(JavaModelOperation.java:802)
+	at org.eclipse.jdt.internal.core.CompilationUnit.reconcile(CompilationUnit.java:1315)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:131)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.access$0(JavaReconcilingStrategy.java:113)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy$1.run(JavaReconcilingStrategy.java:93)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:90)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:157)
+	at org.eclipse.jdt.internal.ui.text.CompositeReconcilingStrategy.reconcile(CompositeReconcilingStrategy.java:92)
+	at org.eclipse.jdt.internal.ui.text.JavaCompositeReconcilingStrategy.reconcile(JavaCompositeReconcilingStrategy.java:107)
+	at org.eclipse.jface.text.reconciler.MonoReconciler.process(MonoReconciler.java:76)
+	at org.eclipse.jface.text.reconciler.AbstractReconciler$BackgroundThread.run(AbstractReconciler.java:210)
+
+!ENTRY org.eclipse.jdt.ui 4 0 2021-03-28 09:22:48.809
+!MESSAGE Error in JDT Core during reconcile
+!STACK 0
+java.lang.IllegalArgumentException
+	at org.eclipse.jdt.core.dom.ASTNode.setSourceRange(ASTNode.java:3008)
+	at org.eclipse.jdt.core.dom.ASTConverter.convertToFieldDeclaration(ASTConverter.java:3378)
+	at org.eclipse.jdt.core.dom.ASTConverter.checkAndAddMultipleFieldDeclaration(ASTConverter.java:456)
+	at org.eclipse.jdt.core.dom.ASTConverter.buildBodyDeclarations(ASTConverter.java:198)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:3115)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:1439)
+	at org.eclipse.jdt.core.dom.AST.convertCompilationUnit(AST.java:392)
+	at org.eclipse.jdt.internal.core.CompilationUnit.buildStructure(CompilationUnit.java:200)
+	at org.eclipse.jdt.internal.core.Openable.generateInfos(Openable.java:268)
+	at org.eclipse.jdt.internal.core.JavaElement.openWhenClosed(JavaElement.java:596)
+	at org.eclipse.jdt.internal.core.CompilationUnit.makeConsistent(CompilationUnit.java:1138)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.makeConsistent(ReconcileWorkingCopyOperation.java:173)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.executeOperation(ReconcileWorkingCopyOperation.java:94)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.run(JavaModelOperation.java:736)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.runOperation(JavaModelOperation.java:802)
+	at org.eclipse.jdt.internal.core.CompilationUnit.reconcile(CompilationUnit.java:1315)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:131)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.access$0(JavaReconcilingStrategy.java:113)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy$1.run(JavaReconcilingStrategy.java:93)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:90)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:157)
+	at org.eclipse.jdt.internal.ui.text.CompositeReconcilingStrategy.reconcile(CompositeReconcilingStrategy.java:92)
+	at org.eclipse.jdt.internal.ui.text.JavaCompositeReconcilingStrategy.reconcile(JavaCompositeReconcilingStrategy.java:107)
+	at org.eclipse.jface.text.reconciler.MonoReconciler.process(MonoReconciler.java:76)
+	at org.eclipse.jface.text.reconciler.AbstractReconciler$BackgroundThread.run(AbstractReconciler.java:210)
+
+!ENTRY org.eclipse.jdt.core 4 4 2021-03-28 09:22:51.394
+!MESSAGE Exception occurred during compilation unit conversion:
+----------------------------------- SOURCE BEGIN -------------------------------------
+import java.util.Stack;
+import java.util.StringTokenizer;
+
+public class SqrlsEngine {
+	private Stack<String> stk;
+	private StringTokenizer query;
+	/** For testing will use pre built **/
+	static SqrlsTable student = new SqrlsTable("student", 5,"ST#","Classif");
+	static SqrlsTable enrollment = new SqrlsTable("enrollment", 9, "ST#","C#","Midterm","Final");
+	static SqrlsTable course = new SqrlsTable("course", 4, "C#", "Title");
+	MAP<String, SqrlsTable> vars = new HashM
+
+	
+	SqrlsTable SqrlsEngine(String argv) {
+		this.stk = new Stack<String>();
+		this.query = new StringTokenizer(argv);
+		return evaluate(query);
+	}
+	
+
+
+	private SqrlsTable evaluate(StringTokenizer argv) {
+		while (argv.hasMoreTokens()) {
+			String tok = argv.nextToken();
+			if (tok.equalsIgnoreCase("(")) evaluate(argv); // This would indicate a sub query to be evaluated first
+			else if (tok.equals("[")) { // v1, this would be indicative of a filter, projection, or a union
+				/**
+				 * Allowed formats for [ is:
+				 * tableName[Col = "val"]
+				 * tableName[Col, Col, Col]
+				 * tableName[Col = Col]tableName
+				 */
+				
+				String arguments = "";
+				Stack<String> parameters = new Stack<String>();
+				while ((arguments = argv.nextToken()) != "]") parameters.push(tok);
+				String[][] parms = new String[parameters.size()][2];
+				for(int i = 0; i < parameters.size(); i++) {
+					String p = parameters.pop();
+					if (p.equals("=")) {
+						parms[0][i] = "equals";
+						parms[1][i] = p;
+					} else if (p.substring(p.length() - 1).equals(",")) {
+						parms[0][i] = "column";
+						parms[1][i] = p.substring(0,p.length() - 1);
+					} else if (p.substring(p.length() - 1).equals("\"")) {
+						parms[0][i] = "value";
+						parms[1][i] = p;
+					}
+				}
+				// now that the operands have been identified, apply to table
+				
+			}
+			else stk.push(tok);
+		}
+		return null;
+	}	
+	
+	public static void main(String[] args) {
+		dummySetup();
+		System.out.println("hello");
+		System.out.println(student.toString());
+		System.out.println(enrollment.toString());
+		System.out.println(course.toString());
+		if (enrollment.containsColumn("ST#")) System.out.println("found");
+		if (!enrollment.containsColumn("zzzzz")) System.out.println("not found");
+		String[][] testProject = enrollment.project("ST#","Final");
+		for(int r = 0; r < 10; r++) {
+			for (int c = 0; c < 2; c++) {
+				System.out.print(testProject[r][c] + " ");
+			}
+			System.out.println();
+		}
+		String[][] testFilter = enrollment.filter("ST#", "100");
+		for(int r = 0; r < 10; r++) {
+			for (int c = 0; c < 4; c++) {
+				System.out.print(testFilter[r][c] + " ");
+			}
+			System.out.println();
+		}
+	}
+	
+	private static void dummySetup() {
+		student.addRow("100","FR");
+		student.addRow("200","SO");
+		student.addRow("300","JR");
+		student.addRow("400","SR");
+		student.addRow("500","FR");
+		enrollment.addRow("100","CS 1713","95","80");
+		enrollment.addRow("100","MAT 1224","100","100");
+		enrollment.addRow("100","ENG 1043","85","85");
+		enrollment.addRow("100","HIS 1033","80","85");
+		enrollment.addRow("200","CS 1713","91","90");
+		enrollment.addRow("200","MAT 1224","50","80");
+		enrollment.addRow("300","CS 1713","65","80");
+		enrollment.addRow("500","CS 1713","100","80");
+		enrollment.addRow("500","HIS 1033","95","90");
+		course.addRow("CS  1713","Intro to CS");
+		course.addRow("MAT 1224","Calculus I");
+		course.addRow("ENG 1043","English I");
+		course.addRow("HIS 1033","History of the World Part I");
+	}
+}
+
+----------------------------------- SOURCE END -------------------------------------
+!STACK 0
+java.lang.IllegalArgumentException
+	at org.eclipse.jdt.core.dom.ASTNode.setSourceRange(ASTNode.java:3008)
+	at org.eclipse.jdt.core.dom.ASTConverter.convertToFieldDeclaration(ASTConverter.java:3378)
+	at org.eclipse.jdt.core.dom.ASTConverter.checkAndAddMultipleFieldDeclaration(ASTConverter.java:456)
+	at org.eclipse.jdt.core.dom.ASTConverter.buildBodyDeclarations(ASTConverter.java:198)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:3115)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:1439)
+	at org.eclipse.jdt.core.dom.AST.convertCompilationUnit(AST.java:392)
+	at org.eclipse.jdt.internal.core.CompilationUnit.buildStructure(CompilationUnit.java:200)
+	at org.eclipse.jdt.internal.core.Openable.generateInfos(Openable.java:268)
+	at org.eclipse.jdt.internal.core.JavaElement.openWhenClosed(JavaElement.java:596)
+	at org.eclipse.jdt.internal.core.CompilationUnit.makeConsistent(CompilationUnit.java:1138)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.makeConsistent(ReconcileWorkingCopyOperation.java:173)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.executeOperation(ReconcileWorkingCopyOperation.java:94)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.run(JavaModelOperation.java:736)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.runOperation(JavaModelOperation.java:802)
+	at org.eclipse.jdt.internal.core.CompilationUnit.reconcile(CompilationUnit.java:1315)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:131)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.access$0(JavaReconcilingStrategy.java:113)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy$1.run(JavaReconcilingStrategy.java:93)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:90)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:157)
+	at org.eclipse.jdt.internal.ui.text.CompositeReconcilingStrategy.reconcile(CompositeReconcilingStrategy.java:92)
+	at org.eclipse.jdt.internal.ui.text.JavaCompositeReconcilingStrategy.reconcile(JavaCompositeReconcilingStrategy.java:107)
+	at org.eclipse.jface.text.reconciler.MonoReconciler.process(MonoReconciler.java:76)
+	at org.eclipse.jface.text.reconciler.AbstractReconciler$BackgroundThread.run(AbstractReconciler.java:210)
+
+!ENTRY org.eclipse.jdt.ui 4 2 2021-03-28 09:22:51.439
+!MESSAGE Problems occurred when invoking code from plug-in: "org.eclipse.jdt.ui".
+!STACK 0
+java.lang.IllegalArgumentException
+	at org.eclipse.jdt.core.dom.ASTNode.setSourceRange(ASTNode.java:3008)
+	at org.eclipse.jdt.core.dom.ASTConverter.convertToFieldDeclaration(ASTConverter.java:3378)
+	at org.eclipse.jdt.core.dom.ASTConverter.checkAndAddMultipleFieldDeclaration(ASTConverter.java:456)
+	at org.eclipse.jdt.core.dom.ASTConverter.buildBodyDeclarations(ASTConverter.java:198)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:3115)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:1439)
+	at org.eclipse.jdt.core.dom.AST.convertCompilationUnit(AST.java:392)
+	at org.eclipse.jdt.internal.core.CompilationUnit.buildStructure(CompilationUnit.java:200)
+	at org.eclipse.jdt.internal.core.Openable.generateInfos(Openable.java:268)
+	at org.eclipse.jdt.internal.core.JavaElement.openWhenClosed(JavaElement.java:596)
+	at org.eclipse.jdt.internal.core.CompilationUnit.makeConsistent(CompilationUnit.java:1138)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.makeConsistent(ReconcileWorkingCopyOperation.java:173)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.executeOperation(ReconcileWorkingCopyOperation.java:94)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.run(JavaModelOperation.java:736)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.runOperation(JavaModelOperation.java:802)
+	at org.eclipse.jdt.internal.core.CompilationUnit.reconcile(CompilationUnit.java:1315)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:131)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.access$0(JavaReconcilingStrategy.java:113)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy$1.run(JavaReconcilingStrategy.java:93)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:90)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:157)
+	at org.eclipse.jdt.internal.ui.text.CompositeReconcilingStrategy.reconcile(CompositeReconcilingStrategy.java:92)
+	at org.eclipse.jdt.internal.ui.text.JavaCompositeReconcilingStrategy.reconcile(JavaCompositeReconcilingStrategy.java:107)
+	at org.eclipse.jface.text.reconciler.MonoReconciler.process(MonoReconciler.java:76)
+	at org.eclipse.jface.text.reconciler.AbstractReconciler$BackgroundThread.run(AbstractReconciler.java:210)
+
+!ENTRY org.eclipse.jdt.ui 4 0 2021-03-28 09:22:51.464
+!MESSAGE Error in JDT Core during reconcile
+!STACK 0
+java.lang.IllegalArgumentException
+	at org.eclipse.jdt.core.dom.ASTNode.setSourceRange(ASTNode.java:3008)
+	at org.eclipse.jdt.core.dom.ASTConverter.convertToFieldDeclaration(ASTConverter.java:3378)
+	at org.eclipse.jdt.core.dom.ASTConverter.checkAndAddMultipleFieldDeclaration(ASTConverter.java:456)
+	at org.eclipse.jdt.core.dom.ASTConverter.buildBodyDeclarations(ASTConverter.java:198)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:3115)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:1439)
+	at org.eclipse.jdt.core.dom.AST.convertCompilationUnit(AST.java:392)
+	at org.eclipse.jdt.internal.core.CompilationUnit.buildStructure(CompilationUnit.java:200)
+	at org.eclipse.jdt.internal.core.Openable.generateInfos(Openable.java:268)
+	at org.eclipse.jdt.internal.core.JavaElement.openWhenClosed(JavaElement.java:596)
+	at org.eclipse.jdt.internal.core.CompilationUnit.makeConsistent(CompilationUnit.java:1138)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.makeConsistent(ReconcileWorkingCopyOperation.java:173)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.executeOperation(ReconcileWorkingCopyOperation.java:94)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.run(JavaModelOperation.java:736)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.runOperation(JavaModelOperation.java:802)
+	at org.eclipse.jdt.internal.core.CompilationUnit.reconcile(CompilationUnit.java:1315)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:131)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.access$0(JavaReconcilingStrategy.java:113)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy$1.run(JavaReconcilingStrategy.java:93)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:90)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:157)
+	at org.eclipse.jdt.internal.ui.text.CompositeReconcilingStrategy.reconcile(CompositeReconcilingStrategy.java:92)
+	at org.eclipse.jdt.internal.ui.text.JavaCompositeReconcilingStrategy.reconcile(JavaCompositeReconcilingStrategy.java:107)
+	at org.eclipse.jface.text.reconciler.MonoReconciler.process(MonoReconciler.java:76)
+	at org.eclipse.jface.text.reconciler.AbstractReconciler$BackgroundThread.run(AbstractReconciler.java:210)
+
+!ENTRY org.eclipse.jdt.core 4 4 2021-03-28 09:22:52.522
+!MESSAGE Exception occurred during compilation unit conversion:
+----------------------------------- SOURCE BEGIN -------------------------------------
+import java.util.Stack;
+import java.util.StringTokenizer;
+
+public class SqrlsEngine {
+	private Stack<String> stk;
+	private StringTokenizer query;
+	/** For testing will use pre built **/
+	static SqrlsTable student = new SqrlsTable("student", 5,"ST#","Classif");
+	static SqrlsTable enrollment = new SqrlsTable("enrollment", 9, "ST#","C#","Midterm","Final");
+	static SqrlsTable course = new SqrlsTable("course", 4, "C#", "Title");
+	MAP<String, SqrlsTable> vars = new HashMap
+
+	
+	SqrlsTable SqrlsEngine(String argv) {
+		this.stk = new Stack<String>();
+		this.query = new StringTokenizer(argv);
+		return evaluate(query);
+	}
+	
+
+
+	private SqrlsTable evaluate(StringTokenizer argv) {
+		while (argv.hasMoreTokens()) {
+			String tok = argv.nextToken();
+			if (tok.equalsIgnoreCase("(")) evaluate(argv); // This would indicate a sub query to be evaluated first
+			else if (tok.equals("[")) { // v1, this would be indicative of a filter, projection, or a union
+				/**
+				 * Allowed formats for [ is:
+				 * tableName[Col = "val"]
+				 * tableName[Col, Col, Col]
+				 * tableName[Col = Col]tableName
+				 */
+				
+				String arguments = "";
+				Stack<String> parameters = new Stack<String>();
+				while ((arguments = argv.nextToken()) != "]") parameters.push(tok);
+				String[][] parms = new String[parameters.size()][2];
+				for(int i = 0; i < parameters.size(); i++) {
+					String p = parameters.pop();
+					if (p.equals("=")) {
+						parms[0][i] = "equals";
+						parms[1][i] = p;
+					} else if (p.substring(p.length() - 1).equals(",")) {
+						parms[0][i] = "column";
+						parms[1][i] = p.substring(0,p.length() - 1);
+					} else if (p.substring(p.length() - 1).equals("\"")) {
+						parms[0][i] = "value";
+						parms[1][i] = p;
+					}
+				}
+				// now that the operands have been identified, apply to table
+				
+			}
+			else stk.push(tok);
+		}
+		return null;
+	}	
+	
+	public static void main(String[] args) {
+		dummySetup();
+		System.out.println("hello");
+		System.out.println(student.toString());
+		System.out.println(enrollment.toString());
+		System.out.println(course.toString());
+		if (enrollment.containsColumn("ST#")) System.out.println("found");
+		if (!enrollment.containsColumn("zzzzz")) System.out.println("not found");
+		String[][] testProject = enrollment.project("ST#","Final");
+		for(int r = 0; r < 10; r++) {
+			for (int c = 0; c < 2; c++) {
+				System.out.print(testProject[r][c] + " ");
+			}
+			System.out.println();
+		}
+		String[][] testFilter = enrollment.filter("ST#", "100");
+		for(int r = 0; r < 10; r++) {
+			for (int c = 0; c < 4; c++) {
+				System.out.print(testFilter[r][c] + " ");
+			}
+			System.out.println();
+		}
+	}
+	
+	private static void dummySetup() {
+		student.addRow("100","FR");
+		student.addRow("200","SO");
+		student.addRow("300","JR");
+		student.addRow("400","SR");
+		student.addRow("500","FR");
+		enrollment.addRow("100","CS 1713","95","80");
+		enrollment.addRow("100","MAT 1224","100","100");
+		enrollment.addRow("100","ENG 1043","85","85");
+		enrollment.addRow("100","HIS 1033","80","85");
+		enrollment.addRow("200","CS 1713","91","90");
+		enrollment.addRow("200","MAT 1224","50","80");
+		enrollment.addRow("300","CS 1713","65","80");
+		enrollment.addRow("500","CS 1713","100","80");
+		enrollment.addRow("500","HIS 1033","95","90");
+		course.addRow("CS  1713","Intro to CS");
+		course.addRow("MAT 1224","Calculus I");
+		course.addRow("ENG 1043","English I");
+		course.addRow("HIS 1033","History of the World Part I");
+	}
+}
+
+----------------------------------- SOURCE END -------------------------------------
+!STACK 0
+java.lang.IllegalArgumentException
+	at org.eclipse.jdt.core.dom.ASTNode.setSourceRange(ASTNode.java:3008)
+	at org.eclipse.jdt.core.dom.ASTConverter.convertToFieldDeclaration(ASTConverter.java:3378)
+	at org.eclipse.jdt.core.dom.ASTConverter.checkAndAddMultipleFieldDeclaration(ASTConverter.java:456)
+	at org.eclipse.jdt.core.dom.ASTConverter.buildBodyDeclarations(ASTConverter.java:198)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:3115)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:1439)
+	at org.eclipse.jdt.core.dom.AST.convertCompilationUnit(AST.java:392)
+	at org.eclipse.jdt.internal.core.CompilationUnit.buildStructure(CompilationUnit.java:200)
+	at org.eclipse.jdt.internal.core.Openable.generateInfos(Openable.java:268)
+	at org.eclipse.jdt.internal.core.JavaElement.openWhenClosed(JavaElement.java:596)
+	at org.eclipse.jdt.internal.core.CompilationUnit.makeConsistent(CompilationUnit.java:1138)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.makeConsistent(ReconcileWorkingCopyOperation.java:173)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.executeOperation(ReconcileWorkingCopyOperation.java:94)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.run(JavaModelOperation.java:736)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.runOperation(JavaModelOperation.java:802)
+	at org.eclipse.jdt.internal.core.CompilationUnit.reconcile(CompilationUnit.java:1315)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:131)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.access$0(JavaReconcilingStrategy.java:113)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy$1.run(JavaReconcilingStrategy.java:93)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:90)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:157)
+	at org.eclipse.jdt.internal.ui.text.CompositeReconcilingStrategy.reconcile(CompositeReconcilingStrategy.java:92)
+	at org.eclipse.jdt.internal.ui.text.JavaCompositeReconcilingStrategy.reconcile(JavaCompositeReconcilingStrategy.java:107)
+	at org.eclipse.jface.text.reconciler.MonoReconciler.process(MonoReconciler.java:76)
+	at org.eclipse.jface.text.reconciler.AbstractReconciler$BackgroundThread.run(AbstractReconciler.java:210)
+
+!ENTRY org.eclipse.jdt.ui 4 2 2021-03-28 09:22:52.561
+!MESSAGE Problems occurred when invoking code from plug-in: "org.eclipse.jdt.ui".
+!STACK 0
+java.lang.IllegalArgumentException
+	at org.eclipse.jdt.core.dom.ASTNode.setSourceRange(ASTNode.java:3008)
+	at org.eclipse.jdt.core.dom.ASTConverter.convertToFieldDeclaration(ASTConverter.java:3378)
+	at org.eclipse.jdt.core.dom.ASTConverter.checkAndAddMultipleFieldDeclaration(ASTConverter.java:456)
+	at org.eclipse.jdt.core.dom.ASTConverter.buildBodyDeclarations(ASTConverter.java:198)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:3115)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:1439)
+	at org.eclipse.jdt.core.dom.AST.convertCompilationUnit(AST.java:392)
+	at org.eclipse.jdt.internal.core.CompilationUnit.buildStructure(CompilationUnit.java:200)
+	at org.eclipse.jdt.internal.core.Openable.generateInfos(Openable.java:268)
+	at org.eclipse.jdt.internal.core.JavaElement.openWhenClosed(JavaElement.java:596)
+	at org.eclipse.jdt.internal.core.CompilationUnit.makeConsistent(CompilationUnit.java:1138)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.makeConsistent(ReconcileWorkingCopyOperation.java:173)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.executeOperation(ReconcileWorkingCopyOperation.java:94)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.run(JavaModelOperation.java:736)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.runOperation(JavaModelOperation.java:802)
+	at org.eclipse.jdt.internal.core.CompilationUnit.reconcile(CompilationUnit.java:1315)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:131)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.access$0(JavaReconcilingStrategy.java:113)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy$1.run(JavaReconcilingStrategy.java:93)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:90)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:157)
+	at org.eclipse.jdt.internal.ui.text.CompositeReconcilingStrategy.reconcile(CompositeReconcilingStrategy.java:92)
+	at org.eclipse.jdt.internal.ui.text.JavaCompositeReconcilingStrategy.reconcile(JavaCompositeReconcilingStrategy.java:107)
+	at org.eclipse.jface.text.reconciler.MonoReconciler.process(MonoReconciler.java:76)
+	at org.eclipse.jface.text.reconciler.AbstractReconciler$BackgroundThread.run(AbstractReconciler.java:210)
+
+!ENTRY org.eclipse.jdt.ui 4 0 2021-03-28 09:22:52.590
+!MESSAGE Error in JDT Core during reconcile
+!STACK 0
+java.lang.IllegalArgumentException
+	at org.eclipse.jdt.core.dom.ASTNode.setSourceRange(ASTNode.java:3008)
+	at org.eclipse.jdt.core.dom.ASTConverter.convertToFieldDeclaration(ASTConverter.java:3378)
+	at org.eclipse.jdt.core.dom.ASTConverter.checkAndAddMultipleFieldDeclaration(ASTConverter.java:456)
+	at org.eclipse.jdt.core.dom.ASTConverter.buildBodyDeclarations(ASTConverter.java:198)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:3115)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:1439)
+	at org.eclipse.jdt.core.dom.AST.convertCompilationUnit(AST.java:392)
+	at org.eclipse.jdt.internal.core.CompilationUnit.buildStructure(CompilationUnit.java:200)
+	at org.eclipse.jdt.internal.core.Openable.generateInfos(Openable.java:268)
+	at org.eclipse.jdt.internal.core.JavaElement.openWhenClosed(JavaElement.java:596)
+	at org.eclipse.jdt.internal.core.CompilationUnit.makeConsistent(CompilationUnit.java:1138)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.makeConsistent(ReconcileWorkingCopyOperation.java:173)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.executeOperation(ReconcileWorkingCopyOperation.java:94)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.run(JavaModelOperation.java:736)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.runOperation(JavaModelOperation.java:802)
+	at org.eclipse.jdt.internal.core.CompilationUnit.reconcile(CompilationUnit.java:1315)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:131)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.access$0(JavaReconcilingStrategy.java:113)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy$1.run(JavaReconcilingStrategy.java:93)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:90)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:157)
+	at org.eclipse.jdt.internal.ui.text.CompositeReconcilingStrategy.reconcile(CompositeReconcilingStrategy.java:92)
+	at org.eclipse.jdt.internal.ui.text.JavaCompositeReconcilingStrategy.reconcile(JavaCompositeReconcilingStrategy.java:107)
+	at org.eclipse.jface.text.reconciler.MonoReconciler.process(MonoReconciler.java:76)
+	at org.eclipse.jface.text.reconciler.AbstractReconciler$BackgroundThread.run(AbstractReconciler.java:210)
+
+!ENTRY org.eclipse.jdt.core 4 4 2021-03-28 09:23:04.763
+!MESSAGE Exception occurred during compilation unit conversion:
+----------------------------------- SOURCE BEGIN -------------------------------------
+import java.util.Stack;
+import java.util.StringTokenizer;
+
+public class SqrlsEngine {
+	private Stack<String> stk;
+	private StringTokenizer query;
+	/** For testing will use pre built **/
+	static SqrlsTable student = new SqrlsTable("student", 5,"ST#","Classif");
+	static SqrlsTable enrollment = new SqrlsTable("enrollment", 9, "ST#","C#","Midterm","Final");
+	static SqrlsTable course = new SqrlsTable("course", 4, "C#", "Title");
+	M<String, SqrlsTable> vars = new HashMap
+
+	
+	SqrlsTable SqrlsEngine(String argv) {
+		this.stk = new Stack<String>();
+		this.query = new StringTokenizer(argv);
+		return evaluate(query);
+	}
+	
+
+
+	private SqrlsTable evaluate(StringTokenizer argv) {
+		while (argv.hasMoreTokens()) {
+			String tok = argv.nextToken();
+			if (tok.equalsIgnoreCase("(")) evaluate(argv); // This would indicate a sub query to be evaluated first
+			else if (tok.equals("[")) { // v1, this would be indicative of a filter, projection, or a union
+				/**
+				 * Allowed formats for [ is:
+				 * tableName[Col = "val"]
+				 * tableName[Col, Col, Col]
+				 * tableName[Col = Col]tableName
+				 */
+				
+				String arguments = "";
+				Stack<String> parameters = new Stack<String>();
+				while ((arguments = argv.nextToken()) != "]") parameters.push(tok);
+				String[][] parms = new String[parameters.size()][2];
+				for(int i = 0; i < parameters.size(); i++) {
+					String p = parameters.pop();
+					if (p.equals("=")) {
+						parms[0][i] = "equals";
+						parms[1][i] = p;
+					} else if (p.substring(p.length() - 1).equals(",")) {
+						parms[0][i] = "column";
+						parms[1][i] = p.substring(0,p.length() - 1);
+					} else if (p.substring(p.length() - 1).equals("\"")) {
+						parms[0][i] = "value";
+						parms[1][i] = p;
+					}
+				}
+				// now that the operands have been identified, apply to table
+				
+			}
+			else stk.push(tok);
+		}
+		return null;
+	}	
+	
+	public static void main(String[] args) {
+		dummySetup();
+		System.out.println("hello");
+		System.out.println(student.toString());
+		System.out.println(enrollment.toString());
+		System.out.println(course.toString());
+		if (enrollment.containsColumn("ST#")) System.out.println("found");
+		if (!enrollment.containsColumn("zzzzz")) System.out.println("not found");
+		String[][] testProject = enrollment.project("ST#","Final");
+		for(int r = 0; r < 10; r++) {
+			for (int c = 0; c < 2; c++) {
+				System.out.print(testProject[r][c] + " ");
+			}
+			System.out.println();
+		}
+		String[][] testFilter = enrollment.filter("ST#", "100");
+		for(int r = 0; r < 10; r++) {
+			for (int c = 0; c < 4; c++) {
+				System.out.print(testFilter[r][c] + " ");
+			}
+			System.out.println();
+		}
+	}
+	
+	private static void dummySetup() {
+		student.addRow("100","FR");
+		student.addRow("200","SO");
+		student.addRow("300","JR");
+		student.addRow("400","SR");
+		student.addRow("500","FR");
+		enrollment.addRow("100","CS 1713","95","80");
+		enrollment.addRow("100","MAT 1224","100","100");
+		enrollment.addRow("100","ENG 1043","85","85");
+		enrollment.addRow("100","HIS 1033","80","85");
+		enrollment.addRow("200","CS 1713","91","90");
+		enrollment.addRow("200","MAT 1224","50","80");
+		enrollment.addRow("300","CS 1713","65","80");
+		enrollment.addRow("500","CS 1713","100","80");
+		enrollment.addRow("500","HIS 1033","95","90");
+		course.addRow("CS  1713","Intro to CS");
+		course.addRow("MAT 1224","Calculus I");
+		course.addRow("ENG 1043","English I");
+		course.addRow("HIS 1033","History of the World Part I");
+	}
+}
+
+----------------------------------- SOURCE END -------------------------------------
+!STACK 0
+java.lang.IllegalArgumentException
+	at org.eclipse.jdt.core.dom.ASTNode.setSourceRange(ASTNode.java:3008)
+	at org.eclipse.jdt.core.dom.ASTConverter.convertToFieldDeclaration(ASTConverter.java:3378)
+	at org.eclipse.jdt.core.dom.ASTConverter.checkAndAddMultipleFieldDeclaration(ASTConverter.java:456)
+	at org.eclipse.jdt.core.dom.ASTConverter.buildBodyDeclarations(ASTConverter.java:198)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:3115)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:1439)
+	at org.eclipse.jdt.core.dom.AST.convertCompilationUnit(AST.java:392)
+	at org.eclipse.jdt.internal.core.CompilationUnit.buildStructure(CompilationUnit.java:200)
+	at org.eclipse.jdt.internal.core.Openable.generateInfos(Openable.java:268)
+	at org.eclipse.jdt.internal.core.JavaElement.openWhenClosed(JavaElement.java:596)
+	at org.eclipse.jdt.internal.core.CompilationUnit.makeConsistent(CompilationUnit.java:1138)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.makeConsistent(ReconcileWorkingCopyOperation.java:173)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.executeOperation(ReconcileWorkingCopyOperation.java:94)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.run(JavaModelOperation.java:736)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.runOperation(JavaModelOperation.java:802)
+	at org.eclipse.jdt.internal.core.CompilationUnit.reconcile(CompilationUnit.java:1315)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:131)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.access$0(JavaReconcilingStrategy.java:113)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy$1.run(JavaReconcilingStrategy.java:93)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:90)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:157)
+	at org.eclipse.jdt.internal.ui.text.CompositeReconcilingStrategy.reconcile(CompositeReconcilingStrategy.java:92)
+	at org.eclipse.jdt.internal.ui.text.JavaCompositeReconcilingStrategy.reconcile(JavaCompositeReconcilingStrategy.java:107)
+	at org.eclipse.jface.text.reconciler.MonoReconciler.process(MonoReconciler.java:76)
+	at org.eclipse.jface.text.reconciler.AbstractReconciler$BackgroundThread.run(AbstractReconciler.java:210)
+
+!ENTRY org.eclipse.jdt.ui 4 2 2021-03-28 09:23:04.795
+!MESSAGE Problems occurred when invoking code from plug-in: "org.eclipse.jdt.ui".
+!STACK 0
+java.lang.IllegalArgumentException
+	at org.eclipse.jdt.core.dom.ASTNode.setSourceRange(ASTNode.java:3008)
+	at org.eclipse.jdt.core.dom.ASTConverter.convertToFieldDeclaration(ASTConverter.java:3378)
+	at org.eclipse.jdt.core.dom.ASTConverter.checkAndAddMultipleFieldDeclaration(ASTConverter.java:456)
+	at org.eclipse.jdt.core.dom.ASTConverter.buildBodyDeclarations(ASTConverter.java:198)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:3115)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:1439)
+	at org.eclipse.jdt.core.dom.AST.convertCompilationUnit(AST.java:392)
+	at org.eclipse.jdt.internal.core.CompilationUnit.buildStructure(CompilationUnit.java:200)
+	at org.eclipse.jdt.internal.core.Openable.generateInfos(Openable.java:268)
+	at org.eclipse.jdt.internal.core.JavaElement.openWhenClosed(JavaElement.java:596)
+	at org.eclipse.jdt.internal.core.CompilationUnit.makeConsistent(CompilationUnit.java:1138)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.makeConsistent(ReconcileWorkingCopyOperation.java:173)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.executeOperation(ReconcileWorkingCopyOperation.java:94)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.run(JavaModelOperation.java:736)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.runOperation(JavaModelOperation.java:802)
+	at org.eclipse.jdt.internal.core.CompilationUnit.reconcile(CompilationUnit.java:1315)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:131)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.access$0(JavaReconcilingStrategy.java:113)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy$1.run(JavaReconcilingStrategy.java:93)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:90)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:157)
+	at org.eclipse.jdt.internal.ui.text.CompositeReconcilingStrategy.reconcile(CompositeReconcilingStrategy.java:92)
+	at org.eclipse.jdt.internal.ui.text.JavaCompositeReconcilingStrategy.reconcile(JavaCompositeReconcilingStrategy.java:107)
+	at org.eclipse.jface.text.reconciler.MonoReconciler.process(MonoReconciler.java:76)
+	at org.eclipse.jface.text.reconciler.AbstractReconciler$BackgroundThread.run(AbstractReconciler.java:210)
+
+!ENTRY org.eclipse.jdt.ui 4 0 2021-03-28 09:23:04.825
+!MESSAGE Error in JDT Core during reconcile
+!STACK 0
+java.lang.IllegalArgumentException
+	at org.eclipse.jdt.core.dom.ASTNode.setSourceRange(ASTNode.java:3008)
+	at org.eclipse.jdt.core.dom.ASTConverter.convertToFieldDeclaration(ASTConverter.java:3378)
+	at org.eclipse.jdt.core.dom.ASTConverter.checkAndAddMultipleFieldDeclaration(ASTConverter.java:456)
+	at org.eclipse.jdt.core.dom.ASTConverter.buildBodyDeclarations(ASTConverter.java:198)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:3115)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:1439)
+	at org.eclipse.jdt.core.dom.AST.convertCompilationUnit(AST.java:392)
+	at org.eclipse.jdt.internal.core.CompilationUnit.buildStructure(CompilationUnit.java:200)
+	at org.eclipse.jdt.internal.core.Openable.generateInfos(Openable.java:268)
+	at org.eclipse.jdt.internal.core.JavaElement.openWhenClosed(JavaElement.java:596)
+	at org.eclipse.jdt.internal.core.CompilationUnit.makeConsistent(CompilationUnit.java:1138)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.makeConsistent(ReconcileWorkingCopyOperation.java:173)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.executeOperation(ReconcileWorkingCopyOperation.java:94)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.run(JavaModelOperation.java:736)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.runOperation(JavaModelOperation.java:802)
+	at org.eclipse.jdt.internal.core.CompilationUnit.reconcile(CompilationUnit.java:1315)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:131)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.access$0(JavaReconcilingStrategy.java:113)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy$1.run(JavaReconcilingStrategy.java:93)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:90)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:157)
+	at org.eclipse.jdt.internal.ui.text.CompositeReconcilingStrategy.reconcile(CompositeReconcilingStrategy.java:92)
+	at org.eclipse.jdt.internal.ui.text.JavaCompositeReconcilingStrategy.reconcile(JavaCompositeReconcilingStrategy.java:107)
+	at org.eclipse.jface.text.reconciler.MonoReconciler.process(MonoReconciler.java:76)
+	at org.eclipse.jface.text.reconciler.AbstractReconciler$BackgroundThread.run(AbstractReconciler.java:210)
+
+!ENTRY org.eclipse.jdt.core 4 4 2021-03-28 09:23:06.893
+!MESSAGE Exception occurred during compilation unit conversion:
+----------------------------------- SOURCE BEGIN -------------------------------------
+import java.util.Stack;
+import java.util.StringTokenizer;
+
+public class SqrlsEngine {
+	private Stack<String> stk;
+	private StringTokenizer query;
+	/** For testing will use pre built **/
+	static SqrlsTable student = new SqrlsTable("student", 5,"ST#","Classif");
+	static SqrlsTable enrollment = new SqrlsTable("enrollment", 9, "ST#","C#","Midterm","Final");
+	static SqrlsTable course = new SqrlsTable("course", 4, "C#", "Title");
+	Map<String, SqrlsTable> vars = new HashMap
+
+	
+	SqrlsTable SqrlsEngine(String argv) {
+		this.stk = new Stack<String>();
+		this.query = new StringTokenizer(argv);
+		return evaluate(query);
+	}
+	
+
+
+	private SqrlsTable evaluate(StringTokenizer argv) {
+		while (argv.hasMoreTokens()) {
+			String tok = argv.nextToken();
+			if (tok.equalsIgnoreCase("(")) evaluate(argv); // This would indicate a sub query to be evaluated first
+			else if (tok.equals("[")) { // v1, this would be indicative of a filter, projection, or a union
+				/**
+				 * Allowed formats for [ is:
+				 * tableName[Col = "val"]
+				 * tableName[Col, Col, Col]
+				 * tableName[Col = Col]tableName
+				 */
+				
+				String arguments = "";
+				Stack<String> parameters = new Stack<String>();
+				while ((arguments = argv.nextToken()) != "]") parameters.push(tok);
+				String[][] parms = new String[parameters.size()][2];
+				for(int i = 0; i < parameters.size(); i++) {
+					String p = parameters.pop();
+					if (p.equals("=")) {
+						parms[0][i] = "equals";
+						parms[1][i] = p;
+					} else if (p.substring(p.length() - 1).equals(",")) {
+						parms[0][i] = "column";
+						parms[1][i] = p.substring(0,p.length() - 1);
+					} else if (p.substring(p.length() - 1).equals("\"")) {
+						parms[0][i] = "value";
+						parms[1][i] = p;
+					}
+				}
+				// now that the operands have been identified, apply to table
+				
+			}
+			else stk.push(tok);
+		}
+		return null;
+	}	
+	
+	public static void main(String[] args) {
+		dummySetup();
+		System.out.println("hello");
+		System.out.println(student.toString());
+		System.out.println(enrollment.toString());
+		System.out.println(course.toString());
+		if (enrollment.containsColumn("ST#")) System.out.println("found");
+		if (!enrollment.containsColumn("zzzzz")) System.out.println("not found");
+		String[][] testProject = enrollment.project("ST#","Final");
+		for(int r = 0; r < 10; r++) {
+			for (int c = 0; c < 2; c++) {
+				System.out.print(testProject[r][c] + " ");
+			}
+			System.out.println();
+		}
+		String[][] testFilter = enrollment.filter("ST#", "100");
+		for(int r = 0; r < 10; r++) {
+			for (int c = 0; c < 4; c++) {
+				System.out.print(testFilter[r][c] + " ");
+			}
+			System.out.println();
+		}
+	}
+	
+	private static void dummySetup() {
+		student.addRow("100","FR");
+		student.addRow("200","SO");
+		student.addRow("300","JR");
+		student.addRow("400","SR");
+		student.addRow("500","FR");
+		enrollment.addRow("100","CS 1713","95","80");
+		enrollment.addRow("100","MAT 1224","100","100");
+		enrollment.addRow("100","ENG 1043","85","85");
+		enrollment.addRow("100","HIS 1033","80","85");
+		enrollment.addRow("200","CS 1713","91","90");
+		enrollment.addRow("200","MAT 1224","50","80");
+		enrollment.addRow("300","CS 1713","65","80");
+		enrollment.addRow("500","CS 1713","100","80");
+		enrollment.addRow("500","HIS 1033","95","90");
+		course.addRow("CS  1713","Intro to CS");
+		course.addRow("MAT 1224","Calculus I");
+		course.addRow("ENG 1043","English I");
+		course.addRow("HIS 1033","History of the World Part I");
+	}
+}
+
+----------------------------------- SOURCE END -------------------------------------
+!STACK 0
+java.lang.IllegalArgumentException
+	at org.eclipse.jdt.core.dom.ASTNode.setSourceRange(ASTNode.java:3008)
+	at org.eclipse.jdt.core.dom.ASTConverter.convertToFieldDeclaration(ASTConverter.java:3378)
+	at org.eclipse.jdt.core.dom.ASTConverter.checkAndAddMultipleFieldDeclaration(ASTConverter.java:456)
+	at org.eclipse.jdt.core.dom.ASTConverter.buildBodyDeclarations(ASTConverter.java:198)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:3115)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:1439)
+	at org.eclipse.jdt.core.dom.AST.convertCompilationUnit(AST.java:392)
+	at org.eclipse.jdt.internal.core.CompilationUnit.buildStructure(CompilationUnit.java:200)
+	at org.eclipse.jdt.internal.core.Openable.generateInfos(Openable.java:268)
+	at org.eclipse.jdt.internal.core.JavaElement.openWhenClosed(JavaElement.java:596)
+	at org.eclipse.jdt.internal.core.CompilationUnit.makeConsistent(CompilationUnit.java:1138)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.makeConsistent(ReconcileWorkingCopyOperation.java:173)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.executeOperation(ReconcileWorkingCopyOperation.java:94)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.run(JavaModelOperation.java:736)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.runOperation(JavaModelOperation.java:802)
+	at org.eclipse.jdt.internal.core.CompilationUnit.reconcile(CompilationUnit.java:1315)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:131)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.access$0(JavaReconcilingStrategy.java:113)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy$1.run(JavaReconcilingStrategy.java:93)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:90)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:157)
+	at org.eclipse.jdt.internal.ui.text.CompositeReconcilingStrategy.reconcile(CompositeReconcilingStrategy.java:92)
+	at org.eclipse.jdt.internal.ui.text.JavaCompositeReconcilingStrategy.reconcile(JavaCompositeReconcilingStrategy.java:107)
+	at org.eclipse.jface.text.reconciler.MonoReconciler.process(MonoReconciler.java:76)
+	at org.eclipse.jface.text.reconciler.AbstractReconciler$BackgroundThread.run(AbstractReconciler.java:210)
+
+!ENTRY org.eclipse.jdt.ui 4 2 2021-03-28 09:23:06.941
+!MESSAGE Problems occurred when invoking code from plug-in: "org.eclipse.jdt.ui".
+!STACK 0
+java.lang.IllegalArgumentException
+	at org.eclipse.jdt.core.dom.ASTNode.setSourceRange(ASTNode.java:3008)
+	at org.eclipse.jdt.core.dom.ASTConverter.convertToFieldDeclaration(ASTConverter.java:3378)
+	at org.eclipse.jdt.core.dom.ASTConverter.checkAndAddMultipleFieldDeclaration(ASTConverter.java:456)
+	at org.eclipse.jdt.core.dom.ASTConverter.buildBodyDeclarations(ASTConverter.java:198)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:3115)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:1439)
+	at org.eclipse.jdt.core.dom.AST.convertCompilationUnit(AST.java:392)
+	at org.eclipse.jdt.internal.core.CompilationUnit.buildStructure(CompilationUnit.java:200)
+	at org.eclipse.jdt.internal.core.Openable.generateInfos(Openable.java:268)
+	at org.eclipse.jdt.internal.core.JavaElement.openWhenClosed(JavaElement.java:596)
+	at org.eclipse.jdt.internal.core.CompilationUnit.makeConsistent(CompilationUnit.java:1138)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.makeConsistent(ReconcileWorkingCopyOperation.java:173)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.executeOperation(ReconcileWorkingCopyOperation.java:94)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.run(JavaModelOperation.java:736)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.runOperation(JavaModelOperation.java:802)
+	at org.eclipse.jdt.internal.core.CompilationUnit.reconcile(CompilationUnit.java:1315)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:131)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.access$0(JavaReconcilingStrategy.java:113)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy$1.run(JavaReconcilingStrategy.java:93)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:90)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:157)
+	at org.eclipse.jdt.internal.ui.text.CompositeReconcilingStrategy.reconcile(CompositeReconcilingStrategy.java:92)
+	at org.eclipse.jdt.internal.ui.text.JavaCompositeReconcilingStrategy.reconcile(JavaCompositeReconcilingStrategy.java:107)
+	at org.eclipse.jface.text.reconciler.MonoReconciler.process(MonoReconciler.java:76)
+	at org.eclipse.jface.text.reconciler.AbstractReconciler$BackgroundThread.run(AbstractReconciler.java:210)
+
+!ENTRY org.eclipse.jdt.ui 4 0 2021-03-28 09:23:06.969
+!MESSAGE Error in JDT Core during reconcile
+!STACK 0
+java.lang.IllegalArgumentException
+	at org.eclipse.jdt.core.dom.ASTNode.setSourceRange(ASTNode.java:3008)
+	at org.eclipse.jdt.core.dom.ASTConverter.convertToFieldDeclaration(ASTConverter.java:3378)
+	at org.eclipse.jdt.core.dom.ASTConverter.checkAndAddMultipleFieldDeclaration(ASTConverter.java:456)
+	at org.eclipse.jdt.core.dom.ASTConverter.buildBodyDeclarations(ASTConverter.java:198)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:3115)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:1439)
+	at org.eclipse.jdt.core.dom.AST.convertCompilationUnit(AST.java:392)
+	at org.eclipse.jdt.internal.core.CompilationUnit.buildStructure(CompilationUnit.java:200)
+	at org.eclipse.jdt.internal.core.Openable.generateInfos(Openable.java:268)
+	at org.eclipse.jdt.internal.core.JavaElement.openWhenClosed(JavaElement.java:596)
+	at org.eclipse.jdt.internal.core.CompilationUnit.makeConsistent(CompilationUnit.java:1138)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.makeConsistent(ReconcileWorkingCopyOperation.java:173)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.executeOperation(ReconcileWorkingCopyOperation.java:94)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.run(JavaModelOperation.java:736)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.runOperation(JavaModelOperation.java:802)
+	at org.eclipse.jdt.internal.core.CompilationUnit.reconcile(CompilationUnit.java:1315)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:131)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.access$0(JavaReconcilingStrategy.java:113)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy$1.run(JavaReconcilingStrategy.java:93)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:90)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:157)
+	at org.eclipse.jdt.internal.ui.text.CompositeReconcilingStrategy.reconcile(CompositeReconcilingStrategy.java:92)
+	at org.eclipse.jdt.internal.ui.text.JavaCompositeReconcilingStrategy.reconcile(JavaCompositeReconcilingStrategy.java:107)
+	at org.eclipse.jface.text.reconciler.MonoReconciler.process(MonoReconciler.java:76)
+	at org.eclipse.jface.text.reconciler.AbstractReconciler$BackgroundThread.run(AbstractReconciler.java:210)
+
+!ENTRY org.eclipse.jdt.core 4 4 2021-03-28 09:23:12.566
+!MESSAGE Exception occurred during compilation unit conversion:
+----------------------------------- SOURCE BEGIN -------------------------------------
+import java.util.Stack;
+import java.util.StringTokenizer;
+
+public class SqrlsEngine {
+	private Stack<String> stk;
+	private StringTokenizer query;
+	/** For testing will use pre built **/
+	static SqrlsTable student = new SqrlsTable("student", 5,"ST#","Classif");
+	static SqrlsTable enrollment = new SqrlsTable("enrollment", 9, "ST#","C#","Midterm","Final");
+	static SqrlsTable course = new SqrlsTable("course", 4, "C#", "Title");
+	Map<String, SqrlsTable> vars = new HashMap<String>
+
+	
+	SqrlsTable SqrlsEngine(String argv) {
+		this.stk = new Stack<String>();
+		this.query = new StringTokenizer(argv);
+		return evaluate(query);
+	}
+	
+
+
+	private SqrlsTable evaluate(StringTokenizer argv) {
+		while (argv.hasMoreTokens()) {
+			String tok = argv.nextToken();
+			if (tok.equalsIgnoreCase("(")) evaluate(argv); // This would indicate a sub query to be evaluated first
+			else if (tok.equals("[")) { // v1, this would be indicative of a filter, projection, or a union
+				/**
+				 * Allowed formats for [ is:
+				 * tableName[Col = "val"]
+				 * tableName[Col, Col, Col]
+				 * tableName[Col = Col]tableName
+				 */
+				
+				String arguments = "";
+				Stack<String> parameters = new Stack<String>();
+				while ((arguments = argv.nextToken()) != "]") parameters.push(tok);
+				String[][] parms = new String[parameters.size()][2];
+				for(int i = 0; i < parameters.size(); i++) {
+					String p = parameters.pop();
+					if (p.equals("=")) {
+						parms[0][i] = "equals";
+						parms[1][i] = p;
+					} else if (p.substring(p.length() - 1).equals(",")) {
+						parms[0][i] = "column";
+						parms[1][i] = p.substring(0,p.length() - 1);
+					} else if (p.substring(p.length() - 1).equals("\"")) {
+						parms[0][i] = "value";
+						parms[1][i] = p;
+					}
+				}
+				// now that the operands have been identified, apply to table
+				
+			}
+			else stk.push(tok);
+		}
+		return null;
+	}	
+	
+	public static void main(String[] args) {
+		dummySetup();
+		System.out.println("hello");
+		System.out.println(student.toString());
+		System.out.println(enrollment.toString());
+		System.out.println(course.toString());
+		if (enrollment.containsColumn("ST#")) System.out.println("found");
+		if (!enrollment.containsColumn("zzzzz")) System.out.println("not found");
+		String[][] testProject = enrollment.project("ST#","Final");
+		for(int r = 0; r < 10; r++) {
+			for (int c = 0; c < 2; c++) {
+				System.out.print(testProject[r][c] + " ");
+			}
+			System.out.println();
+		}
+		String[][] testFilter = enrollment.filter("ST#", "100");
+		for(int r = 0; r < 10; r++) {
+			for (int c = 0; c < 4; c++) {
+				System.out.print(testFilter[r][c] + " ");
+			}
+			System.out.println();
+		}
+	}
+	
+	private static void dummySetup() {
+		student.addRow("100","FR");
+		student.addRow("200","SO");
+		student.addRow("300","JR");
+		student.addRow("400","SR");
+		student.addRow("500","FR");
+		enrollment.addRow("100","CS 1713","95","80");
+		enrollment.addRow("100","MAT 1224","100","100");
+		enrollment.addRow("100","ENG 1043","85","85");
+		enrollment.addRow("100","HIS 1033","80","85");
+		enrollment.addRow("200","CS 1713","91","90");
+		enrollment.addRow("200","MAT 1224","50","80");
+		enrollment.addRow("300","CS 1713","65","80");
+		enrollment.addRow("500","CS 1713","100","80");
+		enrollment.addRow("500","HIS 1033","95","90");
+		course.addRow("CS  1713","Intro to CS");
+		course.addRow("MAT 1224","Calculus I");
+		course.addRow("ENG 1043","English I");
+		course.addRow("HIS 1033","History of the World Part I");
+	}
+}
+
+----------------------------------- SOURCE END -------------------------------------
+!STACK 0
+java.lang.IllegalArgumentException
+	at org.eclipse.jdt.core.dom.ASTNode.setSourceRange(ASTNode.java:3008)
+	at org.eclipse.jdt.core.dom.ASTConverter.convertToFieldDeclaration(ASTConverter.java:3378)
+	at org.eclipse.jdt.core.dom.ASTConverter.checkAndAddMultipleFieldDeclaration(ASTConverter.java:456)
+	at org.eclipse.jdt.core.dom.ASTConverter.buildBodyDeclarations(ASTConverter.java:198)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:3115)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:1439)
+	at org.eclipse.jdt.core.dom.AST.convertCompilationUnit(AST.java:392)
+	at org.eclipse.jdt.internal.core.CompilationUnit.buildStructure(CompilationUnit.java:200)
+	at org.eclipse.jdt.internal.core.Openable.generateInfos(Openable.java:268)
+	at org.eclipse.jdt.internal.core.JavaElement.openWhenClosed(JavaElement.java:596)
+	at org.eclipse.jdt.internal.core.CompilationUnit.makeConsistent(CompilationUnit.java:1138)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.makeConsistent(ReconcileWorkingCopyOperation.java:173)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.executeOperation(ReconcileWorkingCopyOperation.java:94)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.run(JavaModelOperation.java:736)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.runOperation(JavaModelOperation.java:802)
+	at org.eclipse.jdt.internal.core.CompilationUnit.reconcile(CompilationUnit.java:1315)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:131)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.access$0(JavaReconcilingStrategy.java:113)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy$1.run(JavaReconcilingStrategy.java:93)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:90)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:157)
+	at org.eclipse.jdt.internal.ui.text.CompositeReconcilingStrategy.reconcile(CompositeReconcilingStrategy.java:92)
+	at org.eclipse.jdt.internal.ui.text.JavaCompositeReconcilingStrategy.reconcile(JavaCompositeReconcilingStrategy.java:107)
+	at org.eclipse.jface.text.reconciler.MonoReconciler.process(MonoReconciler.java:76)
+	at org.eclipse.jface.text.reconciler.AbstractReconciler$BackgroundThread.run(AbstractReconciler.java:210)
+
+!ENTRY org.eclipse.jdt.ui 4 2 2021-03-28 09:23:12.601
+!MESSAGE Problems occurred when invoking code from plug-in: "org.eclipse.jdt.ui".
+!STACK 0
+java.lang.IllegalArgumentException
+	at org.eclipse.jdt.core.dom.ASTNode.setSourceRange(ASTNode.java:3008)
+	at org.eclipse.jdt.core.dom.ASTConverter.convertToFieldDeclaration(ASTConverter.java:3378)
+	at org.eclipse.jdt.core.dom.ASTConverter.checkAndAddMultipleFieldDeclaration(ASTConverter.java:456)
+	at org.eclipse.jdt.core.dom.ASTConverter.buildBodyDeclarations(ASTConverter.java:198)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:3115)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:1439)
+	at org.eclipse.jdt.core.dom.AST.convertCompilationUnit(AST.java:392)
+	at org.eclipse.jdt.internal.core.CompilationUnit.buildStructure(CompilationUnit.java:200)
+	at org.eclipse.jdt.internal.core.Openable.generateInfos(Openable.java:268)
+	at org.eclipse.jdt.internal.core.JavaElement.openWhenClosed(JavaElement.java:596)
+	at org.eclipse.jdt.internal.core.CompilationUnit.makeConsistent(CompilationUnit.java:1138)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.makeConsistent(ReconcileWorkingCopyOperation.java:173)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.executeOperation(ReconcileWorkingCopyOperation.java:94)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.run(JavaModelOperation.java:736)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.runOperation(JavaModelOperation.java:802)
+	at org.eclipse.jdt.internal.core.CompilationUnit.reconcile(CompilationUnit.java:1315)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:131)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.access$0(JavaReconcilingStrategy.java:113)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy$1.run(JavaReconcilingStrategy.java:93)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:90)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:157)
+	at org.eclipse.jdt.internal.ui.text.CompositeReconcilingStrategy.reconcile(CompositeReconcilingStrategy.java:92)
+	at org.eclipse.jdt.internal.ui.text.JavaCompositeReconcilingStrategy.reconcile(JavaCompositeReconcilingStrategy.java:107)
+	at org.eclipse.jface.text.reconciler.MonoReconciler.process(MonoReconciler.java:76)
+	at org.eclipse.jface.text.reconciler.AbstractReconciler$BackgroundThread.run(AbstractReconciler.java:210)
+
+!ENTRY org.eclipse.jdt.ui 4 0 2021-03-28 09:23:12.632
+!MESSAGE Error in JDT Core during reconcile
+!STACK 0
+java.lang.IllegalArgumentException
+	at org.eclipse.jdt.core.dom.ASTNode.setSourceRange(ASTNode.java:3008)
+	at org.eclipse.jdt.core.dom.ASTConverter.convertToFieldDeclaration(ASTConverter.java:3378)
+	at org.eclipse.jdt.core.dom.ASTConverter.checkAndAddMultipleFieldDeclaration(ASTConverter.java:456)
+	at org.eclipse.jdt.core.dom.ASTConverter.buildBodyDeclarations(ASTConverter.java:198)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:3115)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:1439)
+	at org.eclipse.jdt.core.dom.AST.convertCompilationUnit(AST.java:392)
+	at org.eclipse.jdt.internal.core.CompilationUnit.buildStructure(CompilationUnit.java:200)
+	at org.eclipse.jdt.internal.core.Openable.generateInfos(Openable.java:268)
+	at org.eclipse.jdt.internal.core.JavaElement.openWhenClosed(JavaElement.java:596)
+	at org.eclipse.jdt.internal.core.CompilationUnit.makeConsistent(CompilationUnit.java:1138)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.makeConsistent(ReconcileWorkingCopyOperation.java:173)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.executeOperation(ReconcileWorkingCopyOperation.java:94)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.run(JavaModelOperation.java:736)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.runOperation(JavaModelOperation.java:802)
+	at org.eclipse.jdt.internal.core.CompilationUnit.reconcile(CompilationUnit.java:1315)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:131)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.access$0(JavaReconcilingStrategy.java:113)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy$1.run(JavaReconcilingStrategy.java:93)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:90)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:157)
+	at org.eclipse.jdt.internal.ui.text.CompositeReconcilingStrategy.reconcile(CompositeReconcilingStrategy.java:92)
+	at org.eclipse.jdt.internal.ui.text.JavaCompositeReconcilingStrategy.reconcile(JavaCompositeReconcilingStrategy.java:107)
+	at org.eclipse.jface.text.reconciler.MonoReconciler.process(MonoReconciler.java:76)
+	at org.eclipse.jface.text.reconciler.AbstractReconciler$BackgroundThread.run(AbstractReconciler.java:210)
+
+!ENTRY org.eclipse.jdt.core 4 4 2021-03-28 09:23:13.696
+!MESSAGE Exception occurred during compilation unit conversion:
+----------------------------------- SOURCE BEGIN -------------------------------------
+import java.util.Stack;
+import java.util.StringTokenizer;
+
+public class SqrlsEngine {
+	private Stack<String> stk;
+	private StringTokenizer query;
+	/** For testing will use pre built **/
+	static SqrlsTable student = new SqrlsTable("student", 5,"ST#","Classif");
+	static SqrlsTable enrollment = new SqrlsTable("enrollment", 9, "ST#","C#","Midterm","Final");
+	static SqrlsTable course = new SqrlsTable("course", 4, "C#", "Title");
+	Map<String, SqrlsTable> vars = new HashMap<String,>
+
+	
+	SqrlsTable SqrlsEngine(String argv) {
+		this.stk = new Stack<String>();
+		this.query = new StringTokenizer(argv);
+		return evaluate(query);
+	}
+	
+
+
+	private SqrlsTable evaluate(StringTokenizer argv) {
+		while (argv.hasMoreTokens()) {
+			String tok = argv.nextToken();
+			if (tok.equalsIgnoreCase("(")) evaluate(argv); // This would indicate a sub query to be evaluated first
+			else if (tok.equals("[")) { // v1, this would be indicative of a filter, projection, or a union
+				/**
+				 * Allowed formats for [ is:
+				 * tableName[Col = "val"]
+				 * tableName[Col, Col, Col]
+				 * tableName[Col = Col]tableName
+				 */
+				
+				String arguments = "";
+				Stack<String> parameters = new Stack<String>();
+				while ((arguments = argv.nextToken()) != "]") parameters.push(tok);
+				String[][] parms = new String[parameters.size()][2];
+				for(int i = 0; i < parameters.size(); i++) {
+					String p = parameters.pop();
+					if (p.equals("=")) {
+						parms[0][i] = "equals";
+						parms[1][i] = p;
+					} else if (p.substring(p.length() - 1).equals(",")) {
+						parms[0][i] = "column";
+						parms[1][i] = p.substring(0,p.length() - 1);
+					} else if (p.substring(p.length() - 1).equals("\"")) {
+						parms[0][i] = "value";
+						parms[1][i] = p;
+					}
+				}
+				// now that the operands have been identified, apply to table
+				
+			}
+			else stk.push(tok);
+		}
+		return null;
+	}	
+	
+	public static void main(String[] args) {
+		dummySetup();
+		System.out.println("hello");
+		System.out.println(student.toString());
+		System.out.println(enrollment.toString());
+		System.out.println(course.toString());
+		if (enrollment.containsColumn("ST#")) System.out.println("found");
+		if (!enrollment.containsColumn("zzzzz")) System.out.println("not found");
+		String[][] testProject = enrollment.project("ST#","Final");
+		for(int r = 0; r < 10; r++) {
+			for (int c = 0; c < 2; c++) {
+				System.out.print(testProject[r][c] + " ");
+			}
+			System.out.println();
+		}
+		String[][] testFilter = enrollment.filter("ST#", "100");
+		for(int r = 0; r < 10; r++) {
+			for (int c = 0; c < 4; c++) {
+				System.out.print(testFilter[r][c] + " ");
+			}
+			System.out.println();
+		}
+	}
+	
+	private static void dummySetup() {
+		student.addRow("100","FR");
+		student.addRow("200","SO");
+		student.addRow("300","JR");
+		student.addRow("400","SR");
+		student.addRow("500","FR");
+		enrollment.addRow("100","CS 1713","95","80");
+		enrollment.addRow("100","MAT 1224","100","100");
+		enrollment.addRow("100","ENG 1043","85","85");
+		enrollment.addRow("100","HIS 1033","80","85");
+		enrollment.addRow("200","CS 1713","91","90");
+		enrollment.addRow("200","MAT 1224","50","80");
+		enrollment.addRow("300","CS 1713","65","80");
+		enrollment.addRow("500","CS 1713","100","80");
+		enrollment.addRow("500","HIS 1033","95","90");
+		course.addRow("CS  1713","Intro to CS");
+		course.addRow("MAT 1224","Calculus I");
+		course.addRow("ENG 1043","English I");
+		course.addRow("HIS 1033","History of the World Part I");
+	}
+}
+
+----------------------------------- SOURCE END -------------------------------------
+!STACK 0
+java.lang.IllegalArgumentException
+	at org.eclipse.jdt.core.dom.ASTNode.setSourceRange(ASTNode.java:3008)
+	at org.eclipse.jdt.core.dom.ASTConverter.convertToFieldDeclaration(ASTConverter.java:3378)
+	at org.eclipse.jdt.core.dom.ASTConverter.checkAndAddMultipleFieldDeclaration(ASTConverter.java:456)
+	at org.eclipse.jdt.core.dom.ASTConverter.buildBodyDeclarations(ASTConverter.java:198)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:3115)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:1439)
+	at org.eclipse.jdt.core.dom.AST.convertCompilationUnit(AST.java:392)
+	at org.eclipse.jdt.internal.core.CompilationUnit.buildStructure(CompilationUnit.java:200)
+	at org.eclipse.jdt.internal.core.Openable.generateInfos(Openable.java:268)
+	at org.eclipse.jdt.internal.core.JavaElement.openWhenClosed(JavaElement.java:596)
+	at org.eclipse.jdt.internal.core.CompilationUnit.makeConsistent(CompilationUnit.java:1138)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.makeConsistent(ReconcileWorkingCopyOperation.java:173)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.executeOperation(ReconcileWorkingCopyOperation.java:94)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.run(JavaModelOperation.java:736)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.runOperation(JavaModelOperation.java:802)
+	at org.eclipse.jdt.internal.core.CompilationUnit.reconcile(CompilationUnit.java:1315)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:131)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.access$0(JavaReconcilingStrategy.java:113)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy$1.run(JavaReconcilingStrategy.java:93)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:90)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:157)
+	at org.eclipse.jdt.internal.ui.text.CompositeReconcilingStrategy.reconcile(CompositeReconcilingStrategy.java:92)
+	at org.eclipse.jdt.internal.ui.text.JavaCompositeReconcilingStrategy.reconcile(JavaCompositeReconcilingStrategy.java:107)
+	at org.eclipse.jface.text.reconciler.MonoReconciler.process(MonoReconciler.java:76)
+	at org.eclipse.jface.text.reconciler.AbstractReconciler$BackgroundThread.run(AbstractReconciler.java:210)
+
+!ENTRY org.eclipse.jdt.ui 4 2 2021-03-28 09:23:13.742
+!MESSAGE Problems occurred when invoking code from plug-in: "org.eclipse.jdt.ui".
+!STACK 0
+java.lang.IllegalArgumentException
+	at org.eclipse.jdt.core.dom.ASTNode.setSourceRange(ASTNode.java:3008)
+	at org.eclipse.jdt.core.dom.ASTConverter.convertToFieldDeclaration(ASTConverter.java:3378)
+	at org.eclipse.jdt.core.dom.ASTConverter.checkAndAddMultipleFieldDeclaration(ASTConverter.java:456)
+	at org.eclipse.jdt.core.dom.ASTConverter.buildBodyDeclarations(ASTConverter.java:198)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:3115)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:1439)
+	at org.eclipse.jdt.core.dom.AST.convertCompilationUnit(AST.java:392)
+	at org.eclipse.jdt.internal.core.CompilationUnit.buildStructure(CompilationUnit.java:200)
+	at org.eclipse.jdt.internal.core.Openable.generateInfos(Openable.java:268)
+	at org.eclipse.jdt.internal.core.JavaElement.openWhenClosed(JavaElement.java:596)
+	at org.eclipse.jdt.internal.core.CompilationUnit.makeConsistent(CompilationUnit.java:1138)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.makeConsistent(ReconcileWorkingCopyOperation.java:173)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.executeOperation(ReconcileWorkingCopyOperation.java:94)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.run(JavaModelOperation.java:736)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.runOperation(JavaModelOperation.java:802)
+	at org.eclipse.jdt.internal.core.CompilationUnit.reconcile(CompilationUnit.java:1315)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:131)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.access$0(JavaReconcilingStrategy.java:113)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy$1.run(JavaReconcilingStrategy.java:93)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:90)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:157)
+	at org.eclipse.jdt.internal.ui.text.CompositeReconcilingStrategy.reconcile(CompositeReconcilingStrategy.java:92)
+	at org.eclipse.jdt.internal.ui.text.JavaCompositeReconcilingStrategy.reconcile(JavaCompositeReconcilingStrategy.java:107)
+	at org.eclipse.jface.text.reconciler.MonoReconciler.process(MonoReconciler.java:76)
+	at org.eclipse.jface.text.reconciler.AbstractReconciler$BackgroundThread.run(AbstractReconciler.java:210)
+
+!ENTRY org.eclipse.jdt.ui 4 0 2021-03-28 09:23:13.776
+!MESSAGE Error in JDT Core during reconcile
+!STACK 0
+java.lang.IllegalArgumentException
+	at org.eclipse.jdt.core.dom.ASTNode.setSourceRange(ASTNode.java:3008)
+	at org.eclipse.jdt.core.dom.ASTConverter.convertToFieldDeclaration(ASTConverter.java:3378)
+	at org.eclipse.jdt.core.dom.ASTConverter.checkAndAddMultipleFieldDeclaration(ASTConverter.java:456)
+	at org.eclipse.jdt.core.dom.ASTConverter.buildBodyDeclarations(ASTConverter.java:198)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:3115)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:1439)
+	at org.eclipse.jdt.core.dom.AST.convertCompilationUnit(AST.java:392)
+	at org.eclipse.jdt.internal.core.CompilationUnit.buildStructure(CompilationUnit.java:200)
+	at org.eclipse.jdt.internal.core.Openable.generateInfos(Openable.java:268)
+	at org.eclipse.jdt.internal.core.JavaElement.openWhenClosed(JavaElement.java:596)
+	at org.eclipse.jdt.internal.core.CompilationUnit.makeConsistent(CompilationUnit.java:1138)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.makeConsistent(ReconcileWorkingCopyOperation.java:173)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.executeOperation(ReconcileWorkingCopyOperation.java:94)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.run(JavaModelOperation.java:736)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.runOperation(JavaModelOperation.java:802)
+	at org.eclipse.jdt.internal.core.CompilationUnit.reconcile(CompilationUnit.java:1315)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:131)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.access$0(JavaReconcilingStrategy.java:113)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy$1.run(JavaReconcilingStrategy.java:93)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:90)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:157)
+	at org.eclipse.jdt.internal.ui.text.CompositeReconcilingStrategy.reconcile(CompositeReconcilingStrategy.java:92)
+	at org.eclipse.jdt.internal.ui.text.JavaCompositeReconcilingStrategy.reconcile(JavaCompositeReconcilingStrategy.java:107)
+	at org.eclipse.jface.text.reconciler.MonoReconciler.process(MonoReconciler.java:76)
+	at org.eclipse.jface.text.reconciler.AbstractReconciler$BackgroundThread.run(AbstractReconciler.java:210)
+
+!ENTRY org.eclipse.jdt.core 4 4 2021-03-28 09:23:21.376
+!MESSAGE Exception occurred during compilation unit conversion:
+----------------------------------- SOURCE BEGIN -------------------------------------
+import java.util.Stack;
+import java.util.StringTokenizer;
+
+public class SqrlsEngine {
+	private Stack<String> stk;
+	private StringTokenizer query;
+	/** For testing will use pre built **/
+	static SqrlsTable student = new SqrlsTable("student", 5,"ST#","Classif");
+	static SqrlsTable enrollment = new SqrlsTable("enrollment", 9, "ST#","C#","Midterm","Final");
+	static SqrlsTable course = new SqrlsTable("course", 4, "C#", "Title");
+	Map<String, SqrlsTable> vars = new HashMap<String, SqrlsTable>
+
+	
+	SqrlsTable SqrlsEngine(String argv) {
+		this.stk = new Stack<String>();
+		this.query = new StringTokenizer(argv);
+		return evaluate(query);
+	}
+	
+
+
+	private SqrlsTable evaluate(StringTokenizer argv) {
+		while (argv.hasMoreTokens()) {
+			String tok = argv.nextToken();
+			if (tok.equalsIgnoreCase("(")) evaluate(argv); // This would indicate a sub query to be evaluated first
+			else if (tok.equals("[")) { // v1, this would be indicative of a filter, projection, or a union
+				/**
+				 * Allowed formats for [ is:
+				 * tableName[Col = "val"]
+				 * tableName[Col, Col, Col]
+				 * tableName[Col = Col]tableName
+				 */
+				
+				String arguments = "";
+				Stack<String> parameters = new Stack<String>();
+				while ((arguments = argv.nextToken()) != "]") parameters.push(tok);
+				String[][] parms = new String[parameters.size()][2];
+				for(int i = 0; i < parameters.size(); i++) {
+					String p = parameters.pop();
+					if (p.equals("=")) {
+						parms[0][i] = "equals";
+						parms[1][i] = p;
+					} else if (p.substring(p.length() - 1).equals(",")) {
+						parms[0][i] = "column";
+						parms[1][i] = p.substring(0,p.length() - 1);
+					} else if (p.substring(p.length() - 1).equals("\"")) {
+						parms[0][i] = "value";
+						parms[1][i] = p;
+					}
+				}
+				// now that the operands have been identified, apply to table
+				
+			}
+			else stk.push(tok);
+		}
+		return null;
+	}	
+	
+	public static void main(String[] args) {
+		dummySetup();
+		System.out.println("hello");
+		System.out.println(student.toString());
+		System.out.println(enrollment.toString());
+		System.out.println(course.toString());
+		if (enrollment.containsColumn("ST#")) System.out.println("found");
+		if (!enrollment.containsColumn("zzzzz")) System.out.println("not found");
+		String[][] testProject = enrollment.project("ST#","Final");
+		for(int r = 0; r < 10; r++) {
+			for (int c = 0; c < 2; c++) {
+				System.out.print(testProject[r][c] + " ");
+			}
+			System.out.println();
+		}
+		String[][] testFilter = enrollment.filter("ST#", "100");
+		for(int r = 0; r < 10; r++) {
+			for (int c = 0; c < 4; c++) {
+				System.out.print(testFilter[r][c] + " ");
+			}
+			System.out.println();
+		}
+	}
+	
+	private static void dummySetup() {
+		student.addRow("100","FR");
+		student.addRow("200","SO");
+		student.addRow("300","JR");
+		student.addRow("400","SR");
+		student.addRow("500","FR");
+		enrollment.addRow("100","CS 1713","95","80");
+		enrollment.addRow("100","MAT 1224","100","100");
+		enrollment.addRow("100","ENG 1043","85","85");
+		enrollment.addRow("100","HIS 1033","80","85");
+		enrollment.addRow("200","CS 1713","91","90");
+		enrollment.addRow("200","MAT 1224","50","80");
+		enrollment.addRow("300","CS 1713","65","80");
+		enrollment.addRow("500","CS 1713","100","80");
+		enrollment.addRow("500","HIS 1033","95","90");
+		course.addRow("CS  1713","Intro to CS");
+		course.addRow("MAT 1224","Calculus I");
+		course.addRow("ENG 1043","English I");
+		course.addRow("HIS 1033","History of the World Part I");
+	}
+}
+
+----------------------------------- SOURCE END -------------------------------------
+!STACK 0
+java.lang.IllegalArgumentException
+	at org.eclipse.jdt.core.dom.ASTNode.setSourceRange(ASTNode.java:3008)
+	at org.eclipse.jdt.core.dom.ASTConverter.convertToFieldDeclaration(ASTConverter.java:3378)
+	at org.eclipse.jdt.core.dom.ASTConverter.checkAndAddMultipleFieldDeclaration(ASTConverter.java:456)
+	at org.eclipse.jdt.core.dom.ASTConverter.buildBodyDeclarations(ASTConverter.java:198)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:3115)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:1439)
+	at org.eclipse.jdt.core.dom.AST.convertCompilationUnit(AST.java:392)
+	at org.eclipse.jdt.internal.core.CompilationUnit.buildStructure(CompilationUnit.java:200)
+	at org.eclipse.jdt.internal.core.Openable.generateInfos(Openable.java:268)
+	at org.eclipse.jdt.internal.core.JavaElement.openWhenClosed(JavaElement.java:596)
+	at org.eclipse.jdt.internal.core.CompilationUnit.makeConsistent(CompilationUnit.java:1138)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.makeConsistent(ReconcileWorkingCopyOperation.java:173)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.executeOperation(ReconcileWorkingCopyOperation.java:94)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.run(JavaModelOperation.java:736)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.runOperation(JavaModelOperation.java:802)
+	at org.eclipse.jdt.internal.core.CompilationUnit.reconcile(CompilationUnit.java:1315)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:131)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.access$0(JavaReconcilingStrategy.java:113)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy$1.run(JavaReconcilingStrategy.java:93)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:90)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:157)
+	at org.eclipse.jdt.internal.ui.text.CompositeReconcilingStrategy.reconcile(CompositeReconcilingStrategy.java:92)
+	at org.eclipse.jdt.internal.ui.text.JavaCompositeReconcilingStrategy.reconcile(JavaCompositeReconcilingStrategy.java:107)
+	at org.eclipse.jface.text.reconciler.MonoReconciler.process(MonoReconciler.java:76)
+	at org.eclipse.jface.text.reconciler.AbstractReconciler$BackgroundThread.run(AbstractReconciler.java:210)
+
+!ENTRY org.eclipse.jdt.ui 4 2 2021-03-28 09:23:21.440
+!MESSAGE Problems occurred when invoking code from plug-in: "org.eclipse.jdt.ui".
+!STACK 0
+java.lang.IllegalArgumentException
+	at org.eclipse.jdt.core.dom.ASTNode.setSourceRange(ASTNode.java:3008)
+	at org.eclipse.jdt.core.dom.ASTConverter.convertToFieldDeclaration(ASTConverter.java:3378)
+	at org.eclipse.jdt.core.dom.ASTConverter.checkAndAddMultipleFieldDeclaration(ASTConverter.java:456)
+	at org.eclipse.jdt.core.dom.ASTConverter.buildBodyDeclarations(ASTConverter.java:198)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:3115)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:1439)
+	at org.eclipse.jdt.core.dom.AST.convertCompilationUnit(AST.java:392)
+	at org.eclipse.jdt.internal.core.CompilationUnit.buildStructure(CompilationUnit.java:200)
+	at org.eclipse.jdt.internal.core.Openable.generateInfos(Openable.java:268)
+	at org.eclipse.jdt.internal.core.JavaElement.openWhenClosed(JavaElement.java:596)
+	at org.eclipse.jdt.internal.core.CompilationUnit.makeConsistent(CompilationUnit.java:1138)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.makeConsistent(ReconcileWorkingCopyOperation.java:173)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.executeOperation(ReconcileWorkingCopyOperation.java:94)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.run(JavaModelOperation.java:736)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.runOperation(JavaModelOperation.java:802)
+	at org.eclipse.jdt.internal.core.CompilationUnit.reconcile(CompilationUnit.java:1315)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:131)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.access$0(JavaReconcilingStrategy.java:113)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy$1.run(JavaReconcilingStrategy.java:93)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:90)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:157)
+	at org.eclipse.jdt.internal.ui.text.CompositeReconcilingStrategy.reconcile(CompositeReconcilingStrategy.java:92)
+	at org.eclipse.jdt.internal.ui.text.JavaCompositeReconcilingStrategy.reconcile(JavaCompositeReconcilingStrategy.java:107)
+	at org.eclipse.jface.text.reconciler.MonoReconciler.process(MonoReconciler.java:76)
+	at org.eclipse.jface.text.reconciler.AbstractReconciler$BackgroundThread.run(AbstractReconciler.java:210)
+
+!ENTRY org.eclipse.jdt.ui 4 0 2021-03-28 09:23:21.476
+!MESSAGE Error in JDT Core during reconcile
+!STACK 0
+java.lang.IllegalArgumentException
+	at org.eclipse.jdt.core.dom.ASTNode.setSourceRange(ASTNode.java:3008)
+	at org.eclipse.jdt.core.dom.ASTConverter.convertToFieldDeclaration(ASTConverter.java:3378)
+	at org.eclipse.jdt.core.dom.ASTConverter.checkAndAddMultipleFieldDeclaration(ASTConverter.java:456)
+	at org.eclipse.jdt.core.dom.ASTConverter.buildBodyDeclarations(ASTConverter.java:198)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:3115)
+	at org.eclipse.jdt.core.dom.ASTConverter.convert(ASTConverter.java:1439)
+	at org.eclipse.jdt.core.dom.AST.convertCompilationUnit(AST.java:392)
+	at org.eclipse.jdt.internal.core.CompilationUnit.buildStructure(CompilationUnit.java:200)
+	at org.eclipse.jdt.internal.core.Openable.generateInfos(Openable.java:268)
+	at org.eclipse.jdt.internal.core.JavaElement.openWhenClosed(JavaElement.java:596)
+	at org.eclipse.jdt.internal.core.CompilationUnit.makeConsistent(CompilationUnit.java:1138)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.makeConsistent(ReconcileWorkingCopyOperation.java:173)
+	at org.eclipse.jdt.internal.core.ReconcileWorkingCopyOperation.executeOperation(ReconcileWorkingCopyOperation.java:94)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.run(JavaModelOperation.java:736)
+	at org.eclipse.jdt.internal.core.JavaModelOperation.runOperation(JavaModelOperation.java:802)
+	at org.eclipse.jdt.internal.core.CompilationUnit.reconcile(CompilationUnit.java:1315)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:131)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.access$0(JavaReconcilingStrategy.java:113)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy$1.run(JavaReconcilingStrategy.java:93)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:90)
+	at org.eclipse.jdt.internal.ui.text.java.JavaReconcilingStrategy.reconcile(JavaReconcilingStrategy.java:157)
+	at org.eclipse.jdt.internal.ui.text.CompositeReconcilingStrategy.reconcile(CompositeReconcilingStrategy.java:92)
+	at org.eclipse.jdt.internal.ui.text.JavaCompositeReconcilingStrategy.reconcile(JavaCompositeReconcilingStrategy.java:107)
+	at org.eclipse.jface.text.reconciler.MonoReconciler.process(MonoReconciler.java:76)
+	at org.eclipse.jface.text.reconciler.AbstractReconciler$BackgroundThread.run(AbstractReconciler.java:210)
