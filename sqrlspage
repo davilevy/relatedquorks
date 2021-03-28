@@ -1,6 +1,138 @@
-<!--
-areas:
-  table display
-  query input boxx
-  result set display
--->
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="sqrlcss.css" />
+    <script src="sqrljavascript.js" defer></script>
+
+    <title>SQRLS</title>
+</head>
+<h1 style="background-color:rgb(228, 228, 236);:courier;text-align:center;;font-size:80px;">Structured Query Relational Langauge
+
+
+</h1>
+
+
+<body style="background-color:rgb(90, 90, 88);border:2px solid red;:margin:3px:">
+
+
+    <form style="text-align: center; font-size:40px;font;" name="form2" action="?" method="GET">
+        Enter query: <input type="text" name="SQRLS" value="Relational Algebra Query">
+        <input id="button" type="submit">
+    </form>
+    <div>
+        <APPLET CODE="Main.class" WIDTH="800" HEIGHT="500"></APPLET>
+    </div>
+
+    <br>
+    <br>
+
+    <p>
+        <table style="border:2px solid red; margin: 10px; width:100%; ">
+
+            <tr>
+
+                <td style="border:2px solid red; margin: 10px">
+
+
+
+                    <p style="font-size: 40px;text-align: center;">Tables Selected</p>
+
+
+                    <!--applet code="SqrlsApplet.class" archive="SqrlsApplet.jar width=450"-->
+
+
+                    <table border=3 black solid bgcolor=white>
+
+
+                        <tr>
+
+                            <td border=1 bgcolor=Gray>StudentID </td>
+                            <td border=1 bgcolor=Gray>Name </td>
+                            <td border=1 bgcolor=Gray>GPA </td>
+                            <td border=1 bgcolor=Gray>Major </td>
+                        </tr>
+                        <tr>
+
+                            <td border=1>1739128 </td>
+                            <td border=1> Jake</td>
+                            <td border=1> 3.8</td>
+                            <td border=1>Computer science</td>
+                        </tr>
+                        <tr>
+
+                            <td>1278122</td>
+                            <td>Rob</td>
+                            <td>3.1</td>
+                            <td> Accounting</td>
+                        </tr>
+
+
+                    </table>
+
+
+
+
+
+
+
+
+                </td>
+
+                <td style="border:2px solid red; margin: 10px;justify-content: center;">
+
+
+
+
+                    <p style="font-size: 40px;text-align: center;">Results</p>
+
+
+                    <!--applet code="SqrlsApplet.class" archive="SqrlsApplet.jar width=450"-->
+
+                    <div class="tableanswer-container" id="answer">
+                        <table style="padding: left 5px; ;" border=3 black solid bgcolor=white>
+
+
+                            <tr>
+
+                                <td border=1 bgcolor=Gray>StudentID </td>
+                                <td border=1 bgcolor=Gray>Name </td>
+                                <td border=1 bgcolor=Gray>GPA </td>
+                                <td border=1 bgcolor=Gray>Major </td>
+                            </tr>
+                            <tr>
+
+                                <td border=1>1739128 </td>
+                                <td border=1> Jake</td>
+                                <td border=1> 3.8</td>
+                                <td border=1>Computer science</td>
+                            </tr>
+                            <tr>
+
+                                <td>1278122</td>
+                                <td>Rob</td>
+                                <td>3.1</td>
+                                <td> Accounting</td>
+                            </tr>
+
+
+                        </table>
+                    </div>
+
+                </td>
+
+            </tr>
+
+
+
+
+        </table>
+    </p>
+
+
+</body>
+
+</html>
